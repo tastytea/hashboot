@@ -74,7 +74,7 @@ then
 			tar -xzpPvwf ${BACKUP_FILE} ${file}
 		done
 
-		echo "Type reboot to reboot now, otherwise you get a shell"
+		echo -n "Type reboot to reboot now, otherwise you get a shell: "
 		read -r reboot
 		if [ ${reboot} == "reboot" ]
 		then
