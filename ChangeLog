@@ -1,0 +1,11 @@
+* 2015-06-05 tastytea <tastytea@tastytea.de>
+	Version 0.3
+	Recovery
+* 2015-06-03 tastytea <tastytea@tastytea.de>
+	Version 0.2
+	Debian initscript (SysV-style)
+	Gentoo initscript (openrc)
+	Backup in /var/cache/bootbackup.tar.gz
+* 2015-06-03 tastytea <tastytea@tastytea.de>
+	Version 0.1
+	Usable skript

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          hashboot
+# Required-Start:    $mountall
+# Required-Stop:     
+# Default-Start:     S
+# Default-Stop:      
+# Short-Description: Check integrity of files in /boot
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/bin
+
+# See if hashboot.sh is accessible
+test -x $(which hashboot.sh) || exit 0
+
+case "$1" in
+	start)
+		log_daemon_msg "Checking integrity of files in /boot"
+
+		if ! hashboot.sh check
+		then
+			log_end_msg 1
+			sh
+			exit 1
+		fi
+		
+		log_end_msg 0
+		;;
+	stop)
+		# No-op
+
+		;;
+	restart|reload|force-reload|status)
+		echo "Error: argument '$1' not supported" >&2
+		exit 2
+		;;
+	*)
+		echo "Usage: /etc/init.d/hashboot {start|stop}"
+		exit 2
+		;;
+esac
+
+exit 0

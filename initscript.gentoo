@@ -1,0 +1,24 @@
+#!/sbin/runscript
+
+description="Check integrity of files in /boot"
+
+depend()
+{
+	need localmount
+}
+
+start()
+{
+	ebegin "Checking integrity of files in /boot"
+
+	# See if hashboot.sh is accessible
+	which hashboot.sh > /dev/null || return 1
+
+	if ! hashboot.sh check
+	then
+		sh
+		return 2
+	fi
+	
+	eend 0
+}

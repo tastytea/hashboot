@@ -1,0 +1,8 @@
+For build instruction see INSTALL.
+
+Run "hashboot.sh index" to generate checksums for /boot
+Run "hashboot.sh check" to check /boot
+
+A backup is stored in /var/cache/bootbackup.tar.gz
+
+Detailed documentation is in the sourcecode.
