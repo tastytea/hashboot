@@ -1,8 +1,9 @@
 #!/bin/sh
 #Hashes all files in /boot to check them during early boot
-#Exit codes: 0 = success, 1 = wrong usage, 2 = not root, 3 = no hasher found, 4 = checksum mismatch
+#Exit codes: 0 = success, 1 = wrong usage, 2 = not root, 3 = no hasher found,
+#4 = checksum mismatch, 5 = write error
 
-VERSION="0.3"
+VERSION="0.4"
 DIGEST_FILE="/var/lib/hashboot.digest"
 LOG_FILE="/tmp/hashboot.log"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
@@ -57,8 +58,24 @@ then
 	echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
 	#Write hashes of all regular files to ${DIGEST_FILE}
 	find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
+	if [ $? == 0 ]
+	then
+		echo "List of hashes written to ${DIGEST_FILE}"
+	else
+		echo "Error writing ${DIGEST_FILE}" >&2
+		die 5
+	fi
+
 	#Backup of good files
 	tar -czpPf ${BACKUP_FILE} /boot
+	if [ $? == 0 ]
+	then
+		echo "Backup written to ${BACKUP_FILE}"
+	else
+		echo "Error writing ${BACKUP_FILE}" >&2
+		die 5
+	fi
+
 	die 0
 elif [ "${1}" == "check" ]
 then
@@ -66,12 +83,14 @@ then
 	then
 		die 0
 	else
-		echo "    !! TIME TO PANIK: A FILE WAS MODIFIED !!"
+		echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
 		echo "Restoring files from backup... (type yes or no for each file)"
+		
 		#For each failed file: ask if it should be recovered from backup
 		for file in $(cut -d: -f1 ${LOG_FILE})
 		do
 			tar -xzpPvwf ${BACKUP_FILE} ${file}
+			[ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
 		done
 
 		echo -n "Type reboot to reboot now, otherwise you get a shell: "
