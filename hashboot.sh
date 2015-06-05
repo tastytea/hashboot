@@ -22,6 +22,18 @@ function die
 	exit ${1}
 }
 
+function recover
+{
+	echo "Restoring files from backup... (type yes or no for each file)"
+		
+	#For each failed file: ask if it should be recovered from backup
+	for file in $(cut -d: -f1 ${LOG_FILE})
+	do
+		tar -xzpPvwf ${BACKUP_FILE} ${file}
+		[ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
+	done
+}
+
 #If we're not root: exit
 if [ ${UID} -ne 0 ]
 then
@@ -75,8 +87,6 @@ then
 		echo "Error writing ${BACKUP_FILE}" >&2
 		die 5
 	fi
-
-	die 0
 elif [ "${1}" == "check" ]
 then
 	if $(${HASHER} --check --warn --quiet --strict ${DIGEST_FILE} > ${LOG_FILE})
@@ -84,24 +94,14 @@ then
 		die 0
 	else
 		echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
-		echo "Restoring files from backup... (type yes or no for each file)"
-		
-		#For each failed file: ask if it should be recovered from backup
-		for file in $(cut -d: -f1 ${LOG_FILE})
-		do
-			tar -xzpPvwf ${BACKUP_FILE} ${file}
-			[ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
-		done
-
-		echo -n "Type reboot to reboot now, otherwise you get a shell: "
-		read -r reboot
-		if [ ${reboot} == "reboot" ]
-		then
-			reboot
-		fi
 		die 4
 	fi
+elif [ "${1}" == "recover" ]
+then
+	recover
 else
-	echo "Usage: ${0} index|check" >&2
+	echo "Usage: ${0} index|check|recover" >&2
 	die 1
 fi
+
+die 0

@@ -18,11 +18,23 @@ case "$1" in
 	start)
 		log_daemon_msg "Checking integrity of files in /boot"
 
-		if ! hashboot.sh check
+		hashboot.sh check
+		if [ $? == 4 ]
 		then
-			log_end_msg 1
+			log_end_msg 4
+			
+			echo -n "Recover files? [y/N] "
+			read -r yesno
+			if [ ${yesno} == "y" ]
+			then
+				hashboot.sh recover
+			fi
+
 			sh
-			exit 1
+			exit 4
+		elif [ $? != 0 ]
+			log_end_msg $?
+			exit $?
 		fi
 		
 		log_end_msg 0

@@ -14,10 +14,20 @@ start()
 	# See if hashboot.sh is accessible
 	which hashboot.sh > /dev/null || return 1
 
-	if ! hashboot.sh check
+	hashboot.sh check
+	if [ $? == 4 ]
 	then
+		echo -n "Recover files? [y/N] "
+		read -r yesno
+		if [ ${yesno} == "y" ]
+		then
+			hashboot.sh recover
+		fi
+
 		sh
-		return 2
+		return 4
+	elif [ $? != 0 ]
+		return $?
 	fi
 	
 	eend 0
