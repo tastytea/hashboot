@@ -1,0 +1,14 @@
+[Unit]
+Description=Check for changes made to the boot partition since shutting down
+Requires=basic.target
+After=basic.target
+Before=network.target
+OnFailure=emergency.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/hashboot check
+
+[Install]
+WantedBy=multi-user.target
+
