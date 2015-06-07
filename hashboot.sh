@@ -3,7 +3,9 @@
 #Exit codes: 0 = success, 1 = wrong usage, 2 = not root, 3 = no hasher found,
 #4 = checksum mismatch, 5 = write error
 
-VERSION="0.4"
+VERSION="0.5"
+PATH="/bin:/usr/bin:/sbin:/usr/sbin"
+
 DIGEST_FILE="/var/lib/hashboot.digest"
 LOG_FILE="/tmp/hashboot.log"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"

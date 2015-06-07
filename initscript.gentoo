@@ -27,6 +27,7 @@ start()
 		sh
 		return 4
 	elif [ $? != 0 ]
+	then
 		return $?
 	fi
 	

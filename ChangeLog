@@ -1,3 +1,6 @@
+* 2015-06-08 tastytea <tastytea@tastytea.de>
+	Bug fixes
+	Version 0.5
 * 2015-06-05 tastytea <tastytea@tastytea.de>
 	Changed to be not interactive while checking to work with systemd
 * 2015-06-05 tastytea <tastytea@tastytea.de>
