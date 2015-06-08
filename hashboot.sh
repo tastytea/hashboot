@@ -6,6 +6,7 @@
 VERSION="0.5"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin"
 
+
 DIGEST_FILE="/var/lib/hashboot.digest"
 LOG_FILE="/tmp/hashboot.log"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
