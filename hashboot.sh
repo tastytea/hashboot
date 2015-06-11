@@ -45,12 +45,12 @@ fi
 
 #Try different hashers, use the most secure
 HASHER=$(/usr/bin/which --skip-dot --skip-tilde sha512sum 2> /dev/null)
-test -z ${HASHER} && $(/usr/bin/which --skip-dot --skip-tilde sha384sum 2> /dev/null)
-test -z ${HASHER} && $(/usr/bin/which --skip-dot --skip-tilde sha256sum 2> /dev/null)
-test -z ${HASHER} && $(/usr/bin/which --skip-dot --skip-tilde sha224sum 2> /dev/null)
+test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot --skip-tilde sha384sum 2> /dev/null)
+test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot --skip-tilde sha256sum 2> /dev/null)
+test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot --skip-tilde sha224sum 2> /dev/null)
 #It gets insecure below here, but better than nothing?
-test -z ${HASHER} && $(/usr/bin/which --skip-dot --skip-tilde sha1sum 2> /dev/null)
-test -z ${HASHER} && $(/usr/bin/which --skip-dot --skip-tilde md5sum 2> /dev/null)
+test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot --skip-tilde sha1sum 2> /dev/null)
+test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot --skip-tilde md5sum 2> /dev/null)
 
 #If we found no hasher: exit
 if [ -z ${HASHER} ]
