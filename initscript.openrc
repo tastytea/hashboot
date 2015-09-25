@@ -19,7 +19,7 @@ start()
 	then
 		echo -n "Recover files? [y/N] "
 		read -r yesno
-		if [ ${yesno} == "y" ]
+		if [ "${yesno}" == "y" ]
 		then
 			hashboot.sh recover
 		fi
