@@ -1,3 +1,7 @@
+* 2015-09-25
+	renamed initscripts to more generic names
+	fixed bug in openrc initscript
+	added ebuild
 * 2015-06-11 tastytea <tastytea@tastytea.de>
 	Critical bug fixes
 	Version 0.6
