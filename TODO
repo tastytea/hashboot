@@ -1,7 +1,2 @@
-* SysV-style init scripts (done)
-* Systemd init script (done)
 * Gentoo ebuild
-* Debian package (done)
 * Ubuntu package
-* recovery (done)
-* Error handling (done)
