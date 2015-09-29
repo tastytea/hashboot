@@ -109,6 +109,21 @@ then
     do
         tar -xzpPvwf ${BACKUP_FILE} ${file}
         [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
+        # If the MBR is to be recovered, ask if it really should be copied to /dev/sda.
+        # Should be no problem to do it automatically, but it is untested and would
+        # be really bad if there is an error.
+        if [ "$file" == ${MBR_TMP} ]
+        then
+            echo "Backup of MBR copied to ${MBR_TMP}, copy it to /dev/sda? (DANGEROUS) [y/N] "
+            read -r yesno
+            if [ "${yesno}" == "y" ]
+            then
+                cp ${MBR_TMP} /dev/sda
+            else
+                echo "MBR not recovered, you can copy it manually with:"
+                echo "cp ${MBR_TMP} /dev/sda"
+            fi
+        fi
     done
 else
     echo "Usage: ${0} index|check|recover" >&2
