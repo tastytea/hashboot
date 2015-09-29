@@ -61,7 +61,7 @@ then
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
     #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
-    dd if=/dev/sda of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
     #Write hashes of all regular files to ${DIGEST_FILE}
     ${HASHER} ${MBR_TMP} > ${DIGEST_FILE}
     find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
@@ -84,7 +84,7 @@ then
 elif [ "${1}" == "check" ]
 then
     COUNTER=0
-    dd if=/dev/sda of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
     if $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "MBR ok"
@@ -95,7 +95,6 @@ then
     if $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
     then
         echo "/boot ok"
-        die 0
     else
         echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
         COUNTER=$((COUNTER + 2))
@@ -109,21 +108,12 @@ then
     for file in $(cut -d: -f1 ${LOG_FILE})
     do
         tar -xzpPvwf ${BACKUP_FILE} ${file}
-        [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
-        # If the MBR is to be recovered, ask if it really should be copied to /dev/sda.
-        # Should be no problem to do it automatically, but it is untested and would
-        # be really bad if there is an error.
-        if [ "$file" == ${MBR_TMP} ]
+        [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing" >&2
+        #If the MBR is to be recovered, copy to ${MBR_DEVICE}
+        if [ "${file}" == ${MBR_TMP} ]
         then
-            echo "Backup of MBR copied to ${MBR_TMP}, copy it to /dev/sda? (DANGEROUS) [y/N] "
-            read -r yesno
-            if [ "${yesno}" == "y" ]
-            then
-                cp ${MBR_TMP} /dev/sda
-            else
-                echo "MBR not recovered, you can copy it manually with:"
-                echo "cp ${MBR_TMP} /dev/sda"
-            fi
+            cp ${MBR_TMP} ${MBR_DEVICE}
+            [ $? != 0 ] && echo "Error restoring MBR from backup, continuing" >&2
         fi
     done
 else
