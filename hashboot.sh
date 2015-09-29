@@ -98,17 +98,13 @@ then
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
 
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=none  || die 8
-    if $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
+    if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
-        echo "MBR ok"
-    else
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
         COUNTER=$((COUNTER + 1))
     fi
-    if $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
+    if ! $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
     then
-        echo "/boot ok"
-    else
         echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
         COUNTER=$((COUNTER + 2))
         die $COUNTER
