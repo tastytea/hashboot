@@ -2,7 +2,7 @@
 #Hashes all files in /boot to check them during early boot
 #Exit codes: 0 = success, 1 = checksum mbr mismatch, 2 = checksum /boot mismatch,
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
-#7 = write error, 8 = dd error
+#7 = write error, 8 = dd error, 9 config file error
 
 VERSION="0.7.1"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin"
@@ -14,6 +14,7 @@ MBR_TMP="/tmp/mbr"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
 BOOT_MOUNTED=0
+CONFIG_FILE="/etc/hashboot.cfg"
 
 #Umount /boot if we mounted it, exit with given exit code
 function die
@@ -58,6 +59,24 @@ fi
 
 if [ "${1}" == "index" ]
 then
+    #Look for config file and set ${MBR_DEVICE}.
+    if [ -f ${CONFIG_FILE} ]
+    then
+        MBR_DEVICE=$(grep mbr_device ${CONFIG_FILE} | awk '{print $3}')
+        if [ $? != 0 ]
+        then
+            echo "Error reading config file" >&2
+            die 9
+        fi
+    #If not found, create one and ask for ${MBR_DEVICE}
+    else
+        echo "Which device contains the MBR? [/dev/sda] "
+        read -r MBR_DEVICE
+        [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
+        echo "#Device with the MBR on it" > ${CONFIG_FILE}
+        echo "mbr_device = ${MBR_DEVICE}"
+    fi
+
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
     #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
