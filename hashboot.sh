@@ -4,7 +4,7 @@
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
 #7 = write error, 8 = dd error, 9 config file error
 
-VERSION="0.7.2"
+VERSION="0.7.3"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
