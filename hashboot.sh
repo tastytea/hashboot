@@ -72,7 +72,7 @@ then
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
     #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=none || die 8
     #Write hashes of all regular files to ${DIGEST_FILE}
     ${HASHER} ${MBR_TMP} > ${DIGEST_FILE}
     find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
@@ -93,7 +93,7 @@ then
 elif [ "${1}" == "check" ]
 then
     COUNTER=0
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=none  || die 8
     if $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "MBR ok"
