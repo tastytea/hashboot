@@ -9,7 +9,7 @@ PATH="/bin:/usr/bin:/sbin:/usr/sbin"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
 LOG_FILE="/tmp/hashboot.log"
-MBR_FILE="/var/lib/mbr.digest"
+MBR_DEVICE="/dev/sda"
 MBR_TMP="/tmp/mbr"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
@@ -60,9 +60,10 @@ if [ "${1}" == "index" ]
 then
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
+    #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
+    dd if=/dev/sda of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
     #Write hashes of all regular files to ${DIGEST_FILE}
-    err=$(dd if=/dev/sda of=${MBR_TMP} bs=2M count=1 status=noxfer 2>&1) || die 8
-    ${HASHER} ${MBR_TMP} > ${MBR_FILE}
+    ${HASHER} ${MBR_TMP} > ${DIGEST_FILE}
     find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
     if [ $? == 0 ]
     then
@@ -72,7 +73,7 @@ then
         die 7
     fi
     #Backup of good files
-    tar -czpPf ${BACKUP_FILE} /boot ${MBR_TMP} ${MBR_FILE} ${DIGEST_FILE}
+    tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
     if [ $? == 0 ]
     then
         echo "Backup written to ${BACKUP_FILE}"
@@ -83,15 +84,15 @@ then
 elif [ "${1}" == "check" ]
 then
     COUNTER=0
-    err=$(dd if=/dev/sda of=${MBR_TMP} bs=2M count=1 status=noxfer 2>&1) || die 8
-    if $(${HASHER} --check --warn --quiet --strict ${MBR_FILE} > ${LOG_FILE})
+    dd if=/dev/sda of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    if $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "MBR ok"
     else
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
         COUNTER=$((COUNTER + 1))
     fi
-    if $(${HASHER} --check --warn --quiet --strict ${DIGEST_FILE} >> ${LOG_FILE})
+    if $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
     then
         echo "/boot ok"
         die 0
