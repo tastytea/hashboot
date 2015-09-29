@@ -24,6 +24,7 @@ function die
         umount /boot
     fi
 
+    [ -z "${2}" ] || echo "${2}" >&2
     exit ${1}
 }
 
@@ -31,8 +32,7 @@ function die
 #If we're not root: exit
 if [ ${UID} -ne 0 ]
 then
-    echo "You have to be root" >&2
-    die 4
+    die 4 "You have to be root"
 fi
 
 #Try different hashers, use the most secure
@@ -44,11 +44,7 @@ test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot sha224sum 2> /dev/null)
 test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot sha1sum 2> /dev/null)
 test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot md5sum 2> /dev/null)
 #If we found no hasher: exit
-if [ -z ${HASHER} ]
-then
-    echo "No hash calculator found" >&2
-    die 5
-fi
+[ -z ${HASHER} ] && die 5 "No hash calculator found"
 
 #If /boot is in fstab but not mounted: mount, mark as mounted
 if grep -q '/boot.*noauto' /etc/fstab && ! grep -q /boot /etc/mtab
@@ -63,11 +59,7 @@ then
     if [ -f ${CONFIG_FILE} ]
     then
         MBR_DEVICE=$(grep mbr_device ${CONFIG_FILE} | awk '{print $3}')
-        if [ $? != 0 ]
-        then
-            echo "Error reading config file" >&2
-            die 9
-        fi
+        [ $? != 0 ] && die 9 "Error reading config file"
     #If not found, create one and ask for ${MBR_DEVICE}
     else
         echo -n "Which device contains the MBR? [/dev/sda] "
@@ -88,8 +80,7 @@ then
     then
         echo "List of hashes written to ${DIGEST_FILE}"
     else
-        echo "Error writing ${DIGEST_FILE}" >&2
-        die 7
+        die 7 "Error writing ${DIGEST_FILE}"
     fi
     #Backup of good files
     tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
@@ -97,8 +88,7 @@ then
     then
         echo "Backup written to ${BACKUP_FILE}"
     else
-        echo "Error writing ${BACKUP_FILE}" >&2
-        die 7
+        die 7 "Error writing ${BACKUP_FILE}"
     fi
 elif [ "${1}" == "check" ]
 then
@@ -136,8 +126,7 @@ then
         fi
     done
 else
-    echo "Usage: ${0} index|check|recover" >&2
-    die 6
+    die 6 "Usage: ${0} index|check|recover"
 fi
 
 die 0
