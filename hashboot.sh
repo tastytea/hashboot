@@ -4,7 +4,7 @@
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
 #7 = write error, 8 = dd error
 
-VERSION="0.7"
+VERSION="0.7.1"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -18,7 +18,7 @@ BOOT_MOUNTED=0
 #Umount /boot if we mounted it, exit with given exit code
 function die
 {
-    if [ ! -z ${BOOT_MOUNTED} ]
+    if [ ${BOOT_MOUNTED} -gt 0 ]
     then
         umount /boot
     fi
