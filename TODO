@@ -1,2 +1,3 @@
-* Deian package
+* Debian package
 * Ubuntu package
+* Read header of ${DIGEST_FILE}

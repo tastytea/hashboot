@@ -15,7 +15,7 @@ start()
 	which hashboot.sh > /dev/null || return 1
 
 	hashboot.sh check
-	if [ $? == 4 ]
+	if [ $? -gt 0 ] && [ $? -le 3 ]
 	then
 		echo -n "Recover files? [y/N] "
 		read -r yesno
