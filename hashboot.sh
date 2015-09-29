@@ -93,23 +93,23 @@ then
     fi
 elif [ "${1}" == "check" ]
 then
-	COUNTER=0
-	err=$(dd if=/dev/sda of=${MBR_TMP} bs=2M count=1 status=noxfer 2>&1) || die 8
+    COUNTER=0
+    err=$(dd if=/dev/sda of=${MBR_TMP} bs=2M count=1 status=noxfer 2>&1) || die 8
     if $(${HASHER} --check --warn --quiet --strict ${MBR_FILE} > ${LOG_FILE})
     then
         echo "MBR ok"
     else
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
-		COUNTER=$((COUNTER + 1))
+        COUNTER=$((COUNTER + 1))
     fi
     if $(${HASHER} --check --warn --quiet --strict ${DIGEST_FILE} >> ${LOG_FILE})
     then
         echo "/boot ok"
-		die 0
+        die 0
     else
         echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
-		COUNTER=$((COUNTER + 2))
-		die $COUNTER
+        COUNTER=$((COUNTER + 2))
+        die $COUNTER
     fi
 elif [ "${1}" == "recover" ]
 then
