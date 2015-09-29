@@ -5,7 +5,7 @@
 #7 = write error, 8 = dd error, 9 config file error
 
 VERSION="0.7.2"
-PATH="/bin:/usr/bin:/sbin:/usr/sbin"
+PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
 LOG_FILE="/tmp/hashboot.log"
