@@ -58,7 +58,7 @@ then
     #Look for config file and set ${MBR_DEVICE}.
     if [ -f ${CONFIG_FILE} ]
     then
-        MBR_DEVICE=$(grep mbr_device ${CONFIG_FILE} | awk '{print $3}')
+        MBR_DEVICE=$(grep ^mbr_device ${CONFIG_FILE} | awk '{print $3}')
         [ $? != 0 ] && die 9 "Error reading config file"
     #If not found, create one and ask for ${MBR_DEVICE}
     else
@@ -82,6 +82,7 @@ then
     else
         die 7 "Error writing ${DIGEST_FILE}"
     fi
+
     #Backup of good files
     tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
     if [ $? == 0 ]
