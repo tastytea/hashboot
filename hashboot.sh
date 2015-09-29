@@ -13,30 +13,19 @@ MBR_FILE="/var/lib/mbr.digest"
 MBR_TMP="/tmp/mbr"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
-BOOT_MOUNTED=""
+BOOT_MOUNTED=0
 
 #Umount /boot if we mounted it, exit with given exit code
 function die
 {
     if [ ! -z ${BOOT_MOUNTED} ]
     then
-            umount /boot
+        umount /boot
     fi
 
     exit ${1}
 }
 
-function recover
-{
-    echo "Restoring files from backup... (type yes or no for each file)"
-
-    #For each failed file: ask if it should be recovered from backup
-    for file in $(cut -d: -f1 ${LOG_FILE})
-    do
-        tar -xzpPvwf ${BACKUP_FILE} ${file}
-        [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
-    done
-}
 
 #If we're not root: exit
 if [ ${UID} -ne 0 ]
@@ -113,7 +102,14 @@ then
     fi
 elif [ "${1}" == "recover" ]
 then
-    recover
+    echo "Restoring files from backup... (type yes or no for each file)"
+
+    #For each failed file: ask if it should be recovered from backup
+    for file in $(cut -d: -f1 ${LOG_FILE})
+    do
+        tar -xzpPvwf ${BACKUP_FILE} ${file}
+        [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing"
+    done
 else
     echo "Usage: ${0} index|check|recover" >&2
     die 6
