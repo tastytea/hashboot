@@ -70,11 +70,11 @@ then
         fi
     #If not found, create one and ask for ${MBR_DEVICE}
     else
-        echo "Which device contains the MBR? [/dev/sda] "
+        echo -n "Which device contains the MBR? [/dev/sda] "
         read -r MBR_DEVICE
         [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        echo "mbr_device = ${MBR_DEVICE}"
+        echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
     fi
 
     #Write header
