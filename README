@@ -1,7 +1,8 @@
 For build instruction see INSTALL.
 
-Run "hashboot.sh index" to generate checksums for /boot
-Run "hashboot.sh check" to check /boot
+Run "hashboot.sh index" to generate checksums and a backup for /boot and MBR
+Run "hashboot.sh check" to check /boot and MBR
+Run "hashboot.sh recover" to replace corrupted files with the backup
 
 A backup is stored in /var/cache/bootbackup.tar.gz
 

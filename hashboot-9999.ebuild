@@ -16,6 +16,7 @@ RDEPEND="
 	app-arch/tar
 	sys-apps/findutils
 	sys-apps/grep
+	virtual/awk
 "
 DEPEND="${RDEPEND}
 "
