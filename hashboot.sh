@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #Hashes all files in /boot to check them during early boot
 #Exit codes: 0 = success, 1 = checksum mbr mismatch, 2 = checksum /boot mismatch,
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
@@ -18,7 +18,7 @@ CONFIG_FILE="/etc/hashboot.cfg"
 
 
 #Umount /boot if we mounted it, exit with given exit code
-function die
+die ()
 {
     if [ ${BOOT_MOUNTED} -gt 0 ]
     then
@@ -46,15 +46,15 @@ fi
 if [ "${1}" == "index" ]
 then
     #Try different hashers, use the most secure
-    HASHER=$(/usr/bin/which --skip-dot sha512sum 2> /dev/null)
-    test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot sha384sum 2> /dev/null)
-    test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot sha256sum 2> /dev/null)
-    test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot sha224sum 2> /dev/null)
+    HASHER=$(/usr/bin/which sha512sum 2> /dev/null)
+    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha384sum 2> /dev/null)
+    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha256sum 2> /dev/null)
+    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha224sum 2> /dev/null)
     #It gets insecure below here, but better than nothing?
-    test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot sha1sum 2> /dev/null)
-    test -z ${HASHER} && HASHER=$(/usr/bin/which --skip-dot md5sum 2> /dev/null)
+    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha1sum 2> /dev/null)
+    test -z "${HASHER}" && HASHER=$(/usr/bin/which md5sum 2> /dev/null)
     #If we found no hasher: exit
-    [ -z ${HASHER} ] && die 5 "No hash calculator found"
+    [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
     #Look for config file and set ${MBR_DEVICE}.
     if [ -f ${CONFIG_FILE} ]
@@ -73,7 +73,7 @@ then
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
     #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=none || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
     #Write hashes of all regular files to ${DIGEST_FILE}
     ${HASHER} ${MBR_TMP} >> ${DIGEST_FILE}
     find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
@@ -97,7 +97,7 @@ then
     COUNTER=0
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
 
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=none  || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer  || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
