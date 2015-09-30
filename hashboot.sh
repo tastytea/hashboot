@@ -4,12 +4,12 @@
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
 #7 = write error, 8 = dd error, 9 config file error
 
-VERSION="0.7.3"
+VERSION="0.7.4"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
 LOG_FILE="/tmp/hashboot.log"
-MBR_DEVICE="/dev/sda"
+MBR_DEVICE=""
 MBR_TMP="/tmp/mbr"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
@@ -27,6 +27,23 @@ die ()
 
     [ -z "${2}" ] || echo "${2}" >&2
     exit ${1}
+}
+
+read_config ()
+{
+    #Look for config file and set ${MBR_DEVICE}.
+    if [ -f ${CONFIG_FILE} ]
+    then
+        MBR_DEVICE=$(grep ^mbr_device ${CONFIG_FILE} | awk '{print $3}')
+        [ $? != 0 ] && die 9 "Error reading config file"
+    #If not found, create one and ask for ${MBR_DEVICE}
+    else
+        echo -n "Which device contains the MBR? [/dev/sda] "
+        read -r MBR_DEVICE
+        [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
+        echo "#Device with the MBR on it" > ${CONFIG_FILE}
+        echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
+    fi
 }
 
 #If we're not root: exit
@@ -56,19 +73,7 @@ then
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
-    #Look for config file and set ${MBR_DEVICE}.
-    if [ -f ${CONFIG_FILE} ]
-    then
-        MBR_DEVICE=$(grep ^mbr_device ${CONFIG_FILE} | awk '{print $3}')
-        [ $? != 0 ] && die 9 "Error reading config file"
-    #If not found, create one and ask for ${MBR_DEVICE}
-    else
-        echo -n "Which device contains the MBR? [/dev/sda] "
-        read -r MBR_DEVICE
-        [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
-        echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
-    fi
+    read_config
 
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
@@ -96,6 +101,7 @@ elif [ "${1}" == "check" ]
 then
     COUNTER=0
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
+    read_config
 
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer  || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
