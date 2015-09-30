@@ -103,7 +103,7 @@ then
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
     read_config
 
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer  || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
