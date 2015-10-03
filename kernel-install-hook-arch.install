@@ -2,10 +2,10 @@
 
 case $1 in
     add)
-	hasboot index
+	hashboot index
 	;;
     remove)
-        hasboot index
+        hashboot index
         ;;
 esac
 
