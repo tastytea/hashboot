@@ -6,11 +6,10 @@ pkgrel=1
 pkgdesc="A utility to check at boottime befor network, if /boot or mbr were manipulated."
 arch=('i686' 'x86_64')
 url="https://git.tastytea.de/?p=hashboot.git;a=summary"
-license=('custom:hugware')
-#groups=('')
+license=('custom:"hugware"')
 conflicts=('chkboot' 'mkinitcpio-chkcryptoboot')
 depends=('bash' 'coreutils' 'tar' 'which' 'grep' 'gawk' 'util-linux' 'gzip')
-#makedepends=('')
+install=('hashboot.install')
 source=(git+git://git.tastytea.de/repositories/hashboot.git)
 md5sums=('SKIP')
 
