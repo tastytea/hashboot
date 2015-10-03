@@ -18,6 +18,7 @@ RDEPEND="
 	sys-apps/grep
 	virtual/awk
 	app-shells/bash
+	sys-apps/util-linux
 "
 DEPEND="${RDEPEND}
 "

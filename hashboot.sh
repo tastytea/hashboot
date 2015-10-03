@@ -46,6 +46,14 @@ read_config ()
     fi
 }
 
+mbr_size ()
+{
+    # Find out where the first partition starts returns(prints) size in KiB
+    sectorsize=$(LC_ALL=C fdisk -l /dev/sda | grep '^Units:' | awk '{print $8}')
+    startsector=$(LC_ALL=C fdisk -l /dev/sda | grep -A1 '^Device' | tail -n1 | awk '{print $3}')
+    expr ${sectorsize} \* ${startsector} / 1024
+}
+
 #If we're not root: exit
 if [ ${UID} -ne 0 ]
 then
@@ -78,7 +86,7 @@ then
     #Write header
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
     #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
     #Write hashes of all regular files to ${DIGEST_FILE}
     ${HASHER} ${MBR_TMP} >> ${DIGEST_FILE}
     find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
@@ -103,7 +111,7 @@ then
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
     read_config
 
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=1M count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
