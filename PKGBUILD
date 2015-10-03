@@ -1,4 +1,4 @@
-# Maintainer: xo <oh@rotce.de>
+# Maintainer: xo <xo@rotce.de>
 
 pkgname=hashboot-git
 pkgver=0.7.4
@@ -9,7 +9,7 @@ url="https://git.tastytea.de/?p=hashboot.git;a=summary"
 license=('custom:hugware')
 #groups=('')
 conflicts=('chkboot' 'mkinitcpio-chkcryptoboot')
-depends=('bash' 'coreutils' 'tar' 'which' 'grep' 'gawk' 'util-linux')
+depends=('bash' 'coreutils' 'tar' 'which' 'grep' 'gawk' 'util-linux' 'gzip')
 #makedepends=('')
 source=(git+git://git.tastytea.de/repositories/hashboot.git)
 md5sums=('SKIP')
@@ -17,6 +17,7 @@ md5sums=('SKIP')
 package() {
 	msg "Copy files"
 	cd "$srcdir/hashboot"
+	install -m755 -d "${pkgdir}/usr/lib/systemd/system/"
 	install -Dm644 initscript.systemd "${pkgdir}/usr/lib/systemd/system/hashboot.service"
 	install -Dm755 hashboot.sh "${pkgdir}/usr/bin/hashboot"
 	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/HUGWARE"
