@@ -33,7 +33,7 @@ src_unpack() {
 src_prepare() {
 	mkdir bin
 	mkdir init
-	mv hashboot.sh init/hashboot
+	mv hashboot.sh bin/hashboot
 	mv initscript.openrc init/hashboot
 	mv LICENSE HUG-WARE
 }
