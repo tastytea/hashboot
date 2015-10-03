@@ -11,17 +11,17 @@ start()
 {
 	ebegin "Checking integrity of files in /boot"
 
-	# See if hashboot.sh is accessible
-	which hashboot.sh > /dev/null || return 255
+	# See if hashboot is accessible
+	which hashboot > /dev/null || return 255
 
-	hashboot.sh check
+	hashboot check
 	if [ $? -gt 0 ] && [ $? -le 3 ]
 	then
 		echo -n "Recover files? [y/N] "
 		read -r yesno
 		if [ "${yesno}" == "y" ]
 		then
-			hashboot.sh recover
+			hashboot recover
 		fi
 
 		echo "Dropping to shell. Type exit to continue."

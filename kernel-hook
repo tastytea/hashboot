@@ -1,4 +1,4 @@
 #!/bin/sh
 # Generate checksums of MBR and /boot after each kernel update
 
-hashboot.sh index
+hashboot index

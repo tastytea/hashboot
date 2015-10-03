@@ -11,14 +11,14 @@
 
 #PATH=/sbin:/bin:/usr/bin:/usr
 
-# See if hashboot.sh is accessible
-test -x $(which hashboot.sh) || exit 255
+# See if hashboot is accessible
+test -x $(which hashboot) || exit 255
 
 case "$1" in
 	start)
 		log_daemon_msg "Checking integrity of files in /boot"
 
-		hashboot.sh check
+		hashboot check
 		if [ $? -gt 0 ] && [ $? -le 3 ]
 		then
 			log_end_msg 4
@@ -27,7 +27,7 @@ case "$1" in
 			read -r yesno
 			if [ "${yesno}" == "y" ]
 			then
-				hashboot.sh recover
+				hashboot recover
 			fi
 
 			echo "Dropping to shell. Type exit to continue."
