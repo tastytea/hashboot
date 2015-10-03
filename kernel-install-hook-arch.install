@@ -1,11 +1,4 @@
 #!/bin/bash
 
-case $1 in
-    add)
-	hashboot index
-	;;
-    remove)
-        hashboot index
-        ;;
-esac
+hashboot index
 
