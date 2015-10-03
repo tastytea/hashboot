@@ -4,6 +4,13 @@
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
 #7 = write error, 8 = dd error, 9 config file error
 
+###################################################################################
+# "THE HUG-WARE LICENSE" (Revision 1):                                            #
+# xo <xo@rotce.de> and tastytea <tastytea@tastytea.de> wrote these files. As long #
+# as you retain this notice you can do whatever you want with this stuff. If we   #
+# meet some day, and you think this stuff is worth it, you can give us a hug.     #
+###################################################################################
+
 VERSION="0.7.4"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
