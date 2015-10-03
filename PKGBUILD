@@ -19,6 +19,6 @@ package() {
 	cd "$srcdir/hashboot"
 	install -m755 -d "${pkgdir}/usr/lib/systemd/system/"
 	install -Dm644 initscript.systemd "${pkgdir}/usr/lib/systemd/system/hashboot.service"
-	install -Dm755 hashboot.sh "${pkgdir}/usr/bin/hashboot"
+	install -Dm755 hashboot "${pkgdir}/usr/bin/hashboot"
 	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/HUGWARE"
 }
