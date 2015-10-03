@@ -6,7 +6,7 @@ inherit eutils git-2
 
 DESCRIPTION="Check integrity of files in /boot"
 HOMEPAGE="https://git.tastytea.de/?p=hashboot.git"
-LICENSE="public-domain"
+LICENSE="hug-ware"
 SLOT="0"
 KEYWORDS="amd64 x86"
 IUSE=""
@@ -32,11 +32,15 @@ src_unpack() {
 
 src_prepare() {
 	mv initscript.openrc hashboot
+	mv LICENSE HUG-WARE
 }
 
 
 src_install() {
 	dodoc README
+	insinto /usr/portage/licenses
+	doins HUG-WARE
+	
 	dobin hashboot.sh
 	doinitd hashboot
 }
