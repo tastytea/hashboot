@@ -49,8 +49,13 @@ read_config ()
 mbr_size ()
 {
     # Find out where the first partition starts returns(prints) size in KiB
-    sectorsize=$(LC_ALL=C fdisk -l /dev/sda | grep '^Units:' | awk '{print $8}')
-    startsector=$(LC_ALL=C fdisk -l /dev/sda | grep -A1 '^Device' | tail -n1 | awk '{print $3}')
+    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}')
+    if [ "${sectorsize}" == "=" ] # Older versions of util-linux
+    then
+        sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $9}')
+    fi
+    startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}')
+    
     expr ${sectorsize} \* ${startsector} / 1024
 }
 
