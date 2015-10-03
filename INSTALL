@@ -3,3 +3,16 @@
 * Place hashboot.sh anywhere in $PATH
 * Install the appropriate init script
 * If applicable, copy kernel-hooks.debian to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
+
+VERIFIED TO WORK ON:
+ * Gentoo (as of 2015/10)
+ * Arch (as of 2015/10)
+
+SHOULD WORK ON:
+ * Systems with systemd init system
+ * Systems with openrc init system
+ * Systems with system v init system
+
+WORKS NOT ON:
+ * Ubuntu 14.04 (initscript.sysv doesn't interrupt boot process)
+ * Systems with boot splash (I think)
