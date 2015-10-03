@@ -2,4 +2,4 @@
 * Make hashboot.sh executable
 * Place hashboot.sh anywhere in $PATH
 * Install the appropriate init script
-* If applicable, copy kernel-hooks.debian to /etc/kernel/post{inst,rm}.d/hashboot and make sure it is called after initramfs-tools
+* If applicable, copy kernel-hooks.debian to /etc/kernel/post{inst,rm}.d/z-hashboot (make sure it is called after initramfs-tools)
