@@ -3,3 +3,4 @@
 * Supress dd output while staying Debian 7 compatible
 * Debian and Ubuntu repositories
 * Make Ubuntu 14.04 initscript work
+* Check files bevor write, if writing is needed.
