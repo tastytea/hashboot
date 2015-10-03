@@ -12,7 +12,7 @@ start()
 	ebegin "Checking integrity of files in /boot"
 
 	# See if hashboot.sh is accessible
-	which hashboot.sh > /dev/null || return 1
+	which hashboot.sh > /dev/null || return 255
 
 	hashboot.sh check
 	if [ $? -gt 0 ] && [ $? -le 3 ]
@@ -24,8 +24,9 @@ start()
 			hashboot.sh recover
 		fi
 
+		echo "Dropping to shell. Type exit to continue."
 		sh
-		return 4
+		return 3
 	elif [ $? != 0 ]
 	then
 		return $?

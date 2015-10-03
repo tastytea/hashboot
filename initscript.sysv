@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ### BEGIN INIT INFO
 # Provides:          hashboot
@@ -9,10 +9,10 @@
 # Short-Description: Check integrity of files in /boot
 ### END INIT INFO
 
-PATH=/sbin:/bin:/usr/bin
+#PATH=/sbin:/bin:/usr/bin:/usr
 
 # See if hashboot.sh is accessible
-test -x $(which hashboot.sh) || exit 0
+test -x $(which hashboot.sh) || exit 255
 
 case "$1" in
 	start)
@@ -25,14 +25,16 @@ case "$1" in
 			
 			echo -n "Recover files? [y/N] "
 			read -r yesno
-			if [ ${yesno} == "y" ]
+			if [ "${yesno}" == "y" ]
 			then
 				hashboot.sh recover
 			fi
 
+			echo "Dropping to shell. Type exit to continue."
 			sh
-			exit 4
+			exit 3
 		elif [ $? != 0 ]
+		then
 			log_end_msg $?
 			exit $?
 		fi
@@ -45,11 +47,11 @@ case "$1" in
 		;;
 	restart|reload|force-reload|status)
 		echo "Error: argument '$1' not supported" >&2
-		exit 2
+		exit 1
 		;;
 	*)
 		echo "Usage: /etc/init.d/hashboot {start|stop}"
-		exit 2
+		exit 1
 		;;
 esac
 
