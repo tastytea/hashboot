@@ -1,0 +1,11 @@
+#!/bin/bash
+
+case $1 in
+    add)
+	hasboot index
+	;;
+    remove)
+        hasboot index
+        ;;
+esac
+
