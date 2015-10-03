@@ -31,9 +31,7 @@ src_unpack() {
 }
 
 src_prepare() {
-	mkdir bin
 	mkdir init
-	mv hashboot.sh bin/hashboot
 	mv initscript.openrc init/hashboot
 	mv LICENSE HUG-WARE
 }
@@ -44,6 +42,6 @@ src_install() {
 	insinto /usr/portage/licenses
 	doins HUG-WARE
 	
-	dobin bin/hashboot
+	dobin hashboot
 	doinitd init/hashboot
 }
