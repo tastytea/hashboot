@@ -2,7 +2,7 @@
 * Make hashboot.sh executable
 * Place hashboot.sh anywhere in $PATH
 * Install the appropriate init script
-* If applicable, copy kernel-hooks.debian to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
+* If applicable, copy kernel-hook to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
 
 VERIFIED TO WORK ON:
  * Gentoo (as of 2015/10)
