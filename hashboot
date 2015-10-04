@@ -107,17 +107,22 @@ then
     #Exists ${DIGEST_FILE}, if true run du magic, else write ${DIGEST_FILE}
     if [ -f ${DIGEST_FILE} ]
     then
+
+        #Collect mbr and /boot hashes and write to $DIGEST_FILE_TMP
         write_hashes $DIGEST_FILE_TMP
-    
+
+        #Compare $DIGEST_FILE_TMP against ${DIGEST_FILE} and exit, when fine. Otherwise do magic.
         if diff -q --ignore-matching-lines='^#' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
         then
             echo "alles fine und die exit definieren"
             die 0
         else
+            #Compare actual hashes of MBR against saved hashes.
             if [ "$(grep ${MBR_TMP} ${DIGEST_FILE})" != "$(grep ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
             then
                 echo "at least mbr must be written."
             fi
+            #Compare actual hashes of /boot against saved hashes.
             if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
             then
                 echo "anything here, must be rewritten."
