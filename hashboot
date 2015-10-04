@@ -18,6 +18,7 @@ DIGEST_FILE="/var/lib/hashboot.digest"
 DIGEST_FILE_TMP="/tmp/hashboot.digesttmp"
 LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE=""
+MBR_SIZE=0
 MBR_TMP="/tmp/mbr"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
@@ -52,11 +53,8 @@ read_config ()
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
     fi
-}
 
-mbr_size ()
-{
-    # Find out where the first partition starts returns(prints) size in KiB
+    # Find out where the first partition starts and set ${MBR_SIZE} in KiB
     sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}')
     if [ "${sectorsize}" == "=" ] # Older versions of util-linux
     then
@@ -64,7 +62,8 @@ mbr_size ()
     fi
     startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}')
     
-    expr ${sectorsize} \* ${startsector} / 1024
+    MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
+
     if [ ${?} != 0 ]
     then
         die 1 "Something went wrong. Most likely your partition table is corrupt. Use hashboot recover to fix this."
@@ -76,7 +75,7 @@ write_hashes ()
     #Write header to ${1}
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
     #Write MBR of MBR_DEVICE to ${1}
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
     #Write hashes of all regular files to ${1}
     ${HASHER} ${MBR_TMP} >> ${1}
     find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
@@ -149,7 +148,7 @@ then
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
     read_config
 
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
