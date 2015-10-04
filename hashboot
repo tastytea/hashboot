@@ -20,10 +20,11 @@ LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE=""
 MBR_SIZE=0
 MBR_TMP="/tmp/mbr"
-#BACKUP_FILE="/var/cache/boot-backup.tar.gz"
+BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
 BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
+COUNTER=0
 
 
 #Umount /boot if we mounted it, exit with given exit code
@@ -65,7 +66,7 @@ fi
 #Look for config file and set ${MBR_DEVICE}.
 if [ -f ${CONFIG_FILE} ]
 then
-    MBR_DEVICE=$(grep ^mbr_device ${CONFIG_FILE} | awk '{print $3}')
+    MBR_DEVICE=$(grep ^MBR_DEVICE ${CONFIG_FILE} | awk '{print $3}')
     [ $? != 0 ] && die 9 "Error reading config file"
 #If not found, create one and ask for ${MBR_DEVICE}
 else
@@ -73,13 +74,13 @@ else
     read -r MBR_DEVICE
     [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
     echo "#Device with the MBR on it" > ${CONFIG_FILE}
-    echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
+    echo "MBR_DEVICE = ${MBR_DEVICE}" >> ${CONFIG_FILE}
     
     echo -n "Where should backupfile be stored?" 
     read -r BACKUP_FILE
     [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar.gz"
     echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-    echo "BACKUP_FILE = ${BACKUP_FILE}" >> ${CONFIG_FILE}
+    echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
 fi
 
 # Find out where the first partition starts and set ${MBR_SIZE} in KiB
@@ -143,6 +144,8 @@ then
     else
         write_hashes $DIGEST_FILE
     fi
+    #readconfig
+    source ${CONFIG_FILE}
     #Backup of good files
     tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
     if [ $? == 0 ]
@@ -153,7 +156,6 @@ then
     fi
 elif [ "${1}" == "check" ]
 then
-    COUNTER=0
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
 
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
