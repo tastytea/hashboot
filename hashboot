@@ -70,17 +70,26 @@ then
     [ $? != 0 ] && die 9 "Error reading config file"
 #If not found, create one and ask for ${MBR_DEVICE}
 else
-    echo -n "Which device contains the MBR? [/dev/sda] "
-    read -r MBR_DEVICE
-    [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
-    echo "#Device with the MBR on it" > ${CONFIG_FILE}
-    echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
+    if [ -z "$PS1" ]
+    then
+        echo "#Device with the MBR on it" > ${CONFIG_FILE}
+        MBR_DEVICE="/dev/sda"
+        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
+    else
+        echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
+        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
+        echo -n "Which device contains the MBR? [/dev/sda] "
+        read -r MBR_DEVICE
+        [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
+        echo "#Device with the MBR on it" > ${CONFIG_FILE}
+        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
     
-    echo -n "Where should backupfile be stored?" 
-    read -r BACKUP_FILE
-    [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar.gz"
-    echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-    echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+        echo -n "Where should backupfile be stored?" 
+        read -r BACKUP_FILE
+        [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar.gz"
+        echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
+        echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+    fi
 fi
 
 # Find out where the first partition starts and set ${MBR_SIZE} in KiB
