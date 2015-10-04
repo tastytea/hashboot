@@ -127,14 +127,14 @@ then
             #Compare actual hashes of MBR against saved hashes.
             if [ "$(grep ${MBR_TMP} ${DIGEST_FILE})" != "$(grep ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
             then
-                echo "at least mbr must be written."
+                [ -z "$PS1" ] || echo "at least mbr must be written."
             fi
             #Compare actual hashes of /boot against saved hashes.
             if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
             then
-                echo "anything here, must be rewritten."
+                [ -z "$PS1" ] || echo "anything here, must be rewritten."
                 #if interactive ask if rewrite einzeln?
-                echo "find out which one?"
+                [ -z "$PS1" ] || echo "find out which one?"
                 #read z und so weiter..
             fi
             mv ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
