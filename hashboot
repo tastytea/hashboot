@@ -17,8 +17,8 @@ PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 DIGEST_FILE="/var/lib/hashboot.digest"
 DIGEST_FILE_TMP="/tmp/hashboot.digesttmp"
 LOG_FILE="/tmp/hashboot.log"
-MBR_DEVICE=""
-MBR_SIZE=0
+MBR_DEVICE="/dev/sda"
+MBR_SIZE=1024
 MBR_TMP="/tmp/mbr"
 BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
@@ -74,11 +74,10 @@ else
     if [ -z "$PS1" ]
     then
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        MBR_DEVICE="/dev/sda"
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
-    else
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
+        echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+    else
         echo -n "Which device contains the MBR? [/dev/sda] "
         read -r MBR_DEVICE
         [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
