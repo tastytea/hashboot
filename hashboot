@@ -20,7 +20,7 @@ LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE=""
 MBR_SIZE=0
 MBR_TMP="/tmp/mbr"
-BACKUP_FILE="/var/cache/boot-backup.tar.gz"
+#BACKUP_FILE="/var/cache/boot-backup.tar.gz"
 HASHER=""
 BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
@@ -74,6 +74,12 @@ else
     [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
     echo "#Device with the MBR on it" > ${CONFIG_FILE}
     echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
+    
+    echo -n "Where should backupfile be stored?" 
+    read -r BACKUP_FILE
+    [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar.gz"
+    echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
+    echo "BACKUP_FILE = ${BACKUP_FILE}" >> ${CONFIG_FILE}
 fi
 
 # Find out where the first partition starts and set ${MBR_SIZE} in KiB
