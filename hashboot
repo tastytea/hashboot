@@ -38,38 +38,6 @@ die ()
     exit ${1}
 }
 
-read_config ()
-{
-    #Look for config file and set ${MBR_DEVICE}.
-    if [ -f ${CONFIG_FILE} ]
-    then
-        MBR_DEVICE=$(grep ^mbr_device ${CONFIG_FILE} | awk '{print $3}')
-        [ $? != 0 ] && die 9 "Error reading config file"
-    #If not found, create one and ask for ${MBR_DEVICE}
-    else
-        echo -n "Which device contains the MBR? [/dev/sda] "
-        read -r MBR_DEVICE
-        [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
-        echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
-    fi
-
-    # Find out where the first partition starts and set ${MBR_SIZE} in KiB
-    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}')
-    if [ "${sectorsize}" == "=" ] # Older versions of util-linux
-    then
-        sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $9}')
-    fi
-    startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}')
-    
-    MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
-
-    if [ ${?} != 0 ]
-    then
-        die 1 "Something went wrong. Most likely your partition table is corrupt. Use hashboot recover to fix this."
-    fi
-}
-
 write_hashes ()
 {
     #Write header to ${1}
@@ -94,6 +62,34 @@ then
     BOOT_MOUNTED=1
 fi
 
+#Look for config file and set ${MBR_DEVICE}.
+if [ -f ${CONFIG_FILE} ]
+then
+    MBR_DEVICE=$(grep ^mbr_device ${CONFIG_FILE} | awk '{print $3}')
+    [ $? != 0 ] && die 9 "Error reading config file"
+#If not found, create one and ask for ${MBR_DEVICE}
+else
+    echo -n "Which device contains the MBR? [/dev/sda] "
+    read -r MBR_DEVICE
+    [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
+    echo "#Device with the MBR on it" > ${CONFIG_FILE}
+    echo "mbr_device = ${MBR_DEVICE}" >> ${CONFIG_FILE}
+fi
+
+# Find out where the first partition starts and set ${MBR_SIZE} in KiB
+sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}')
+if [ "${sectorsize}" == "=" ] # Older versions of util-linux
+then
+    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $9}')
+fi
+startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}')
+
+MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
+
+if [ ${?} != 0 ]
+then
+    die 1 "Something went wrong. Most likely your partition table is corrupt. Use hashboot recover to fix this."
+fi
 
 if [ "${1}" == "index" ]
 then
@@ -107,8 +103,6 @@ then
     test -z "${HASHER}" && HASHER=$(/usr/bin/which md5sum 2> /dev/null)
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
-
-    read_config
     
     #Exists ${DIGEST_FILE}, if true run du magic, else write ${DIGEST_FILE}
     if [ -f ${DIGEST_FILE} ]
@@ -146,7 +140,6 @@ elif [ "${1}" == "check" ]
 then
     COUNTER=0
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
-    read_config
 
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
