@@ -71,7 +71,7 @@ then
 #If not found, create one and ask for ${MBR_DEVICE}
 else
     #Create ${CONFIG_FILE} with defaults if noninterctive
-    if [ -z "$PS1" ]
+    if [ -t "0" ]
     then
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
