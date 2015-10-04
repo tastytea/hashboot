@@ -15,6 +15,7 @@ VERSION="0.7.4"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
+DIGEST_FILE_TMP="/tmp/hashboot.digesttmp"
 LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE=""
 MBR_TMP="/tmp/mbr"
@@ -66,6 +67,17 @@ mbr_size ()
     expr ${sectorsize} \* ${startsector} / 1024
 }
 
+write_hashes ()
+{
+    #Write header to tmp
+    echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
+    #Write MBR of MBR_DEVICE to tmp
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
+    #Write hashes of all regular files to tmp
+    ${HASHER} ${MBR_TMP} >> ${1}
+    find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
+}
+    
 #If we're not root: exit
 if [ ${UID} -ne 0 ]
 then
@@ -73,7 +85,7 @@ then
 fi
 
 #If /boot is in fstab but not mounted: mount, mark as mounted
-if grep -q '/boot' /etc/fstab && ! grep -q /boot /etc/mtab
+if grep -q '/boot.*noauto' /etc/fstab && ! grep -q /boot /etc/mtab
 then
     mount /boot
     BOOT_MOUNTED=1
@@ -95,20 +107,26 @@ then
 
     read_config
 
-    #Write header
-    echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${DIGEST_FILE}
-    #Write MBR of MBR_DEVICE to ${DIGEST_FILE}
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
-    #Write hashes of all regular files to ${DIGEST_FILE}
-    ${HASHER} ${MBR_TMP} >> ${DIGEST_FILE}
-    find /boot -type f -exec ${HASHER} --binary {} >> ${DIGEST_FILE} +
-    if [ $? == 0 ]
+    write_hashes $DIGEST_FILE_TMP
+    
+    if diff -q --ignore-matching-lines='^#' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
     then
-        echo "List of hashes written to ${DIGEST_FILE}"
+        echo "alles fine und die exit definieren"
+        die 0
     else
-        die 7 "Error writing ${DIGEST_FILE}"
+        if [ "$(grep ${MBR_TMP} ${DIGEST_FILE})" != "$(grep ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
+        then
+            echo "at least mbr must be written."
+        fi
+        if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
+        then
+            echo "anything here, must be rewritten."
+            cp ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
+            rm ${DIGEST_FILE_TMP}
+            echo "List of hashes written to ${DIGEST_FILE}"
+        fi
     fi
-
+    
     #Backup of good files
     tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
     if [ $? == 0 ]
