@@ -132,44 +132,42 @@ then
         then
             die 0
         else
-            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '^#' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
             do 
                 #lösche_aus_tar
-                echo tar --delete -z -v -f $BACKUP_FILE $file
+                tar --delete -v -f $BACKUP_FILE $file
             done
-            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '^#' | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
             do
-                echo tar -r -z -v -f $BACKUP_FILE $file
+                tar -r -v -f $BACKUP_FILE $file
             done
-            
-            #mv -v ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
         fi
     else
         write_hashes $DIGEST_FILE
-    fi
-    #Backup of good files
-    tar -czpPf ${BACKUP_FILE}    /boot ${DIGEST_FILE}
-    if [ $? == 0 ]
-    then
+        tar -cpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
         echo "Backup written to ${BACKUP_FILE}"
-    else
-        die 7 "Error writing ${BACKUP_FILE}"
     fi
+ 
 elif [ "${1}" == "check" ]
 then
-    HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
+    [ -f ${DIGEST_FILE} ]
+    then
+        HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
 
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
-    if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
-    then
-        echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
-        COUNTER=$((COUNTER + 1))
-    fi
-    if ! $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
-    then
-        echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
-        COUNTER=$((COUNTER + 2))
-        die $COUNTER
+        dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
+        if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
+        then
+            echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
+            COUNTER=$((COUNTER + 1))
+        fi
+        if ! $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
+        then
+            echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
+            COUNTER=$((COUNTER + 2))
+            die $COUNTER
+        fi
+    else
+    #error no digest file
     fi
 elif [ "${1}" == "recover" ]
 then
