@@ -65,6 +65,10 @@ mbr_size ()
     startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}')
     
     expr ${sectorsize} \* ${startsector} / 1024
+    if [ ${?} != 0 ]
+    then
+        die 1 "Something went wrong. Most likely your partition table is corrupt. Use hashboot recover to fix this."
+    fi
 }
 
 write_hashes ()
