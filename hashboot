@@ -65,8 +65,7 @@ fi
 #Look for config file and set ${MBR_DEVICE}.
 if [ -f ${CONFIG_FILE} ]
 then
-    source ${CONFIG_FILE}
-    [ $? != 0 ] && die 9 "Error reading config file"
+    source ${CONFIG_FILE} || die 9 "Error reading config file"
 #If not found, create one and ask for ${MBR_DEVICE}
 else
     #Create ${CONFIG_FILE} with defaults if noninterctive
@@ -109,7 +108,6 @@ fi
 
 if [ "${1}" == "index" ]
 then
-    [ -f ${CONFIG_FILE} ] || die 9 "No configfile"
     #Try different hashers, use the most secure
     HASHER=$(/usr/bin/which sha512sum 2> /dev/null)
     test -z "${HASHER}" && HASHER=$(/usr/bin/which sha384sum 2> /dev/null)
@@ -143,6 +141,7 @@ then
                 tar -r -v -P -f $BACKUP_FILE $file
             done
         fi
+    #nur, wenn das updaten des Backups geklappt hat. *im Hinterkopf behalt*
     mv ${DIGEST_FILE_TMP} ${DIGEST_FILE}
     else
         write_hashes $DIGEST_FILE
@@ -153,7 +152,6 @@ then
 elif [ "${1}" == "check" ]
 then
     [ -f ${DIGEST_FILE} ] || die 9 "No digestfile"
-    [ -f ${CONFIG_FILE} ] || die 9 "No configfile"
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
