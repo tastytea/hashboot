@@ -130,18 +130,18 @@ then
         write_hashes $DIGEST_FILE_TMP
 
         #Compare $DIGEST_FILE_TMP against ${DIGEST_FILE} and exit, when fine. Otherwise do magic.
-        if diff -q --ignore-matching-lines='^#' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
+        if diff -q --ignore-matching-lines='#hashboot' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
         then
             die 0
         else
-            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '^#' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
             do 
                 #lösche_aus_tar
-                tar --delete -v -f $BACKUP_FILE $file
+                echo tar --delete -v -f $BACKUP_FILE $file
             done
-            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '^#' | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
             do
-                tar -r -v -f $BACKUP_FILE $file
+                echo tar -r -v -f $BACKUP_FILE $file
             done
         fi
     else
