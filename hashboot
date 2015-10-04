@@ -138,6 +138,7 @@ then
                 tar --delete -z -f -v $BACKUP_FILE $file
             done
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
+            do
                 tar -r -z -f -v $BACKUP_FILE $file
             done
             
