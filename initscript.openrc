@@ -5,6 +5,7 @@ description="Check integrity of files in /boot"
 depend()
 {
 	need localmount
+	before xdm
 }
 
 start()
