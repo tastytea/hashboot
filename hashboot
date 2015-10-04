@@ -140,9 +140,9 @@ then
             #Compare actual hashes of /boot against saved hashes.
             if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
             then
-                [ -t "0" ] && echo "anything here, must be rewritten."
+                [ -t "0" ] && echo "mbr was faulty."
                 #if interactive ask if rewrite einzeln?
-                [ -t "0" ] && echo "find out which one?"
+                [ -t "0" ] && echo "any file was faulty."
                 #read z und so weiter..
             fi
             mv ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
