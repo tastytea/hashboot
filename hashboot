@@ -70,6 +70,7 @@ then
     [ $? != 0 ] && die 9 "Error reading config file"
 #If not found, create one and ask for ${MBR_DEVICE}
 else
+    #Create ${CONFIG_FILE} with defaults if noninterctive
     if [ -z "$PS1" ]
     then
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
