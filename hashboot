@@ -106,27 +106,28 @@ then
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
     read_config
-
-    write_hashes $DIGEST_FILE_TMP
+    if [ -f ${DIGEST_FILE} ]
+        write_hashes $DIGEST_FILE_TMP
     
-    if diff -q --ignore-matching-lines='^#' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
-    then
-        echo "alles fine und die exit definieren"
-        die 0
-    else
-        if [ "$(grep ${MBR_TMP} ${DIGEST_FILE})" != "$(grep ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
+        if diff -q --ignore-matching-lines='^#' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
         then
-            echo "at least mbr must be written."
-        fi
-        if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
-        then
-            echo "anything here, must be rewritten."
-            cp ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
-            rm ${DIGEST_FILE_TMP}
+            echo "alles fine und die exit definieren"
+            die 0
+        else
+            if [ "$(grep ${MBR_TMP} ${DIGEST_FILE})" != "$(grep ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
+            then
+                echo "at least mbr must be written."
+            fi
+            if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
+            then
+                echo "anything here, must be rewritten."
+            fi
+            mv ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
             echo "List of hashes written to ${DIGEST_FILE}"
         fi
+    else
+        write_hashes $DIGEST_FILE
     fi
-    
     #Backup of good files
     tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
     if [ $? == 0 ]
