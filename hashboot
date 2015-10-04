@@ -26,7 +26,6 @@ BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
 
-
 #Umount /boot if we mounted it, exit with given exit code
 die ()
 {
