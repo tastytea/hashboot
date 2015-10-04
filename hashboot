@@ -73,11 +73,6 @@ else
     #Create ${CONFIG_FILE} with defaults if noninterctive
     if [ -t "0" ]
     then
-        echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
-        echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-        echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
-    else
         echo -n "Which device contains the MBR? [/dev/sda] "
         read -r MBR_DEVICE
         [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
@@ -87,6 +82,11 @@ else
         echo -n "Where should backupfile be stored?" 
         read -r BACKUP_FILE
         [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar.gz"
+        echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
+        echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+    else
+        echo "#Device with the MBR on it" > ${CONFIG_FILE}
+        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
         echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
     fi
