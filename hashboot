@@ -26,6 +26,12 @@ BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
 
+if [[ -t "$fd" || -p /dev/stdin ]]
+then
+    INTERACTIVE=1
+else
+    INTERACTIVE=0
+fi
 
 #Umount /boot if we mounted it, exit with given exit code
 die ()
