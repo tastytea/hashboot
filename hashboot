@@ -2,7 +2,7 @@
 #Hashes all files in /boot to check them during early boot
 #Exit codes: 0 = success, 1 = checksum mbr mismatch, 2 = checksum /boot mismatch,
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
-#7 = write error, 8 = dd error, 9 config file error
+#7 = write error, 8 = dd error, 9 = file not found
 
 ###################################################################################
 # "THE HUG-WARE LICENSE" (Revision 1):                                            #
@@ -20,7 +20,7 @@ LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE="/dev/sda"
 MBR_SIZE=1024
 MBR_TMP="/tmp/mbr"
-BACKUP_FILE="/var/cache/boot-backup.tar.gz"
+BACKUP_FILE="/var/cache/boot-backup.tar"
 HASHER=""
 BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
@@ -109,6 +109,8 @@ fi
 
 if [ "${1}" == "index" ]
 then
+    [ -f ${DIGEST_FILE} ] || die 10 "No digestfile"
+    [ -f ${CONFIG_FILE} ] || die 9 "No configfile"
     #Try different hashers, use the most secure
     HASHER=$(/usr/bin/which sha512sum 2> /dev/null)
     test -z "${HASHER}" && HASHER=$(/usr/bin/which sha384sum 2> /dev/null)
@@ -150,24 +152,20 @@ then
  
 elif [ "${1}" == "check" ]
 then
-    [ -f ${DIGEST_FILE} ]
+    [ -f ${DIGEST_FILE} ] || die 9 "No digestfile"
+    [ -f ${CONFIG_FILE} ] || die 9 "No configfile"
+    HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
+    if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
     then
-        HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
-
-        dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
-        if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
-        then
-            echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
-            COUNTER=$((COUNTER + 1))
-        fi
-        if ! $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
-        then
-            echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
-            COUNTER=$((COUNTER + 2))
-            die $COUNTER
-        fi
-    else
-    #error no digest file
+        echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
+        COUNTER=$((COUNTER + 1))
+    fi
+    if ! $(grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict >> ${LOG_FILE})
+    then
+        echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
+        COUNTER=$((COUNTER + 2))
+        die $COUNTER
     fi
 elif [ "${1}" == "recover" ]
 then
@@ -176,7 +174,7 @@ then
     #For each failed file: ask if it should be recovered from backup
     for file in $(cut -d: -f1 ${LOG_FILE})
     do
-        tar -xzpPvwf ${BACKUP_FILE} ${file}
+        tar -xpPvwf ${BACKUP_FILE} ${file}
         [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing" >&2
         #If the MBR is to be recovered, copy to ${MBR_DEVICE}
         if [ "${file}" == ${MBR_TMP} ]
