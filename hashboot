@@ -86,9 +86,10 @@ startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | a
 
 MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
 
-if [ ${?} != 0 ] && [ "${1}" != "recover" ]
+if [ ${?} != 0 ]
 then
-    die 1 "Something went wrong. Most likely your partition table is corrupt. Use hashboot recover to fix this."
+    echo "Something went wrong. Most likely your partition table is corrupt." >&2
+    die 1 "You have to recover the MBR manually by copying the mbr from ${BACKUP_FILE}"
 fi
 
 if [ "${1}" == "index" ]
