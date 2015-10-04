@@ -66,7 +66,7 @@ fi
 #Look for config file and set ${MBR_DEVICE}.
 if [ -f ${CONFIG_FILE} ]
 then
-    MBR_DEVICE=$(grep ^MBR_DEVICE ${CONFIG_FILE} | awk '{print $3}')
+    source ${CONFIG_FILE}
     [ $? != 0 ] && die 9 "Error reading config file"
 #If not found, create one and ask for ${MBR_DEVICE}
 else
@@ -74,7 +74,7 @@ else
     read -r MBR_DEVICE
     [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
     echo "#Device with the MBR on it" > ${CONFIG_FILE}
-    echo "MBR_DEVICE = ${MBR_DEVICE}" >> ${CONFIG_FILE}
+    echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
     
     echo -n "Where should backupfile be stored?" 
     read -r BACKUP_FILE
@@ -84,12 +84,12 @@ else
 fi
 
 # Find out where the first partition starts and set ${MBR_SIZE} in KiB
-sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}')
+sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' )
 if [ "${sectorsize}" == "=" ] # Older versions of util-linux
 then
-    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $9}')
+    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' )
 fi
-startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}')
+startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 )
 
 MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
 
@@ -155,7 +155,7 @@ then
     fi
 elif [ "${1}" == "check" ]
 then
-    HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
+    HASHER=$(head -n1 ${DIGEST_FILE} )
 
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
