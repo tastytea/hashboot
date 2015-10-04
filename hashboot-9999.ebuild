@@ -31,6 +31,11 @@ src_unpack() {
 }
 
 src_prepare() {
+	if grep -q '^rc_parallel="YES"' /etc/rc.conf
+	then
+		ewarn "hashboot does not work properly with parallel boot enabled."
+	fi
+	
 	mkdir init
 	mv initscript.openrc init/hashboot
 	mv LICENSE HUG-WARE

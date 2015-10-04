@@ -16,3 +16,4 @@ SHOULD WORK ON:
 WORKS NOT ON:
  * Ubuntu 14.04 (initscript.sysv doesn't interrupt boot process)
  * Systems with boot splash (I think)
+ * Systems with openrc/sysv-init and parallel boot
