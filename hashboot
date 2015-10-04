@@ -69,11 +69,11 @@ mbr_size ()
 
 write_hashes ()
 {
-    #Write header to tmp
+    #Write header to ${1}
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
-    #Write MBR of MBR_DEVICE to tmp
+    #Write MBR of MBR_DEVICE to ${1}
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=$(mbr_size)K count=1 status=noxfer || die 8
-    #Write hashes of all regular files to tmp
+    #Write hashes of all regular files to ${1}
     ${HASHER} ${MBR_TMP} >> ${1}
     find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
 }
@@ -106,6 +106,8 @@ then
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
     read_config
+    
+    #Exists ${DIGEST_FILE}, if true run du magic, else write ${DIGEST_FILE}
     if [ -f ${DIGEST_FILE} ]
     then
         write_hashes $DIGEST_FILE_TMP
