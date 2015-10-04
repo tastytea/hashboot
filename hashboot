@@ -121,6 +121,9 @@ then
             if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
             then
                 echo "anything here, must be rewritten."
+                #if interactive ask if rewrite einzeln?
+                echo "find out which one?"
+                #read z und so weiter..
             fi
             mv ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
             echo "List of hashes written to ${DIGEST_FILE}"
