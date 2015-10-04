@@ -19,7 +19,8 @@ RDEPEND="
 	virtual/awk
 	app-shells/bash
 	sys-apps/util-linux
-	app-arch/gzip
+	sys-apps/diffutils
+	sys-apps/sed
 "
 DEPEND="${RDEPEND}
 "
