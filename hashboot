@@ -73,7 +73,7 @@ then
 fi
 
 #If /boot is in fstab but not mounted: mount, mark as mounted
-if grep -q '/boot.*noauto' /etc/fstab && ! grep -q /boot /etc/mtab
+if grep -q '/boot' /etc/fstab && ! grep -q /boot /etc/mtab
 then
     mount /boot
     BOOT_MOUNTED=1
