@@ -135,11 +135,11 @@ then
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
             do 
                 #lösche_aus_tar
-                tar --delete -z -v -f $BACKUP_FILE $file
+                echo tar --delete -z -v -f $BACKUP_FILE $file
             done
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
             do
-                tar -r -z -v -f $BACKUP_FILE $file
+                echo tar -r -z -v -f $BACKUP_FILE $file
             done
             
             #mv -v ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
