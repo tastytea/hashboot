@@ -107,6 +107,7 @@ then
 
     read_config
     if [ -f ${DIGEST_FILE} ]
+    then
         write_hashes $DIGEST_FILE_TMP
     
         if diff -q --ignore-matching-lines='^#' ${DIGEST_FILE} ${DIGEST_FILE_TMP} ;
