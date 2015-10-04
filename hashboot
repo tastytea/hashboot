@@ -11,7 +11,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.7.5"
+VERSION="0.7.6"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -120,7 +120,7 @@ then
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
     
-    #Exists ${DIGEST_FILE}, if true run du magic, else write ${DIGEST_FILE}
+    #Exists ${DIGEST_FILE}, if true run do magic, else write ${DIGEST_FILE}
     if [ -f ${DIGEST_FILE} ]
     then
 
@@ -132,28 +132,22 @@ then
         then
             die 0
         else
-            #Compare actual hashes of MBR against saved hashes.
-            if [ "$(grep ${MBR_TMP} ${DIGEST_FILE})" != "$(grep ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
-            then
-                [ -t "0" ] && echo "mbr was faulty."
-                #future write separatly from files
-            fi
-            #Compare actual hashes of /boot against saved hashes.
-            if [ "$(grep -v ${MBR_TMP} ${DIGEST_FILE})" != "$(grep -v ${MBR_TMP} ${DIGEST_FILE_TMP})" ]
-            then
-                [ -t "0" ] && echo "any file was faulty."
-                #future: write per file and separatly from mbr
-            fi
-            mv ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
-            echo "List of hashes written to ${DIGEST_FILE}"
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
+            do 
+                #lösche_aus_tar
+                tar --delete -z -f -v $BACKUP_FILE $file
+            done
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
+                tar -r -z -f -v $BACKUP_FILE $file
+            done
+            
+            #mv -v ${DIGEST_FILE_TMP} ${DIGEST_FILE} || die 7
         fi
     else
         write_hashes $DIGEST_FILE
     fi
-    #readconfig
-    source ${CONFIG_FILE}
     #Backup of good files
-    tar -czpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE}
+    tar -czpPf ${BACKUP_FILE}    /boot ${DIGEST_FILE}
     if [ $? == 0 ]
     then
         echo "Backup written to ${BACKUP_FILE}"
