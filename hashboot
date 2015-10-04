@@ -143,6 +143,7 @@ then
                 tar -r -v -P -f $BACKUP_FILE $file
             done
         fi
+    mv ${DIGEST_FILE_TMP} ${DIGEST_FILE}
     else
         write_hashes $DIGEST_FILE
         tar -cpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
