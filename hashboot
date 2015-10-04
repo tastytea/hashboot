@@ -109,7 +109,6 @@ fi
 
 if [ "${1}" == "index" ]
 then
-    [ -f ${DIGEST_FILE} ] || die 10 "No digestfile"
     [ -f ${CONFIG_FILE} ] || die 9 "No configfile"
     #Try different hashers, use the most secure
     HASHER=$(/usr/bin/which sha512sum 2> /dev/null)
