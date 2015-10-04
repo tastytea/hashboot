@@ -93,12 +93,12 @@ else
 fi
 
 # Find out where the first partition starts and set ${MBR_SIZE} in KiB
-sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' )
+sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}' )
 if [ "${sectorsize}" == "=" ] # Older versions of util-linux
 then
-    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' )
+    sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $9}' )
 fi
-startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 )
+startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}' )
 
 MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
 
@@ -164,7 +164,7 @@ then
     fi
 elif [ "${1}" == "check" ]
 then
-    HASHER=$(head -n1 ${DIGEST_FILE} )
+    HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
 
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
     if ! $(grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict > ${LOG_FILE})
