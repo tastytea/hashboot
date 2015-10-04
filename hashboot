@@ -137,11 +137,11 @@ then
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
             do 
                 #lösche_aus_tar
-                tar --delete -v -f $BACKUP_FILE $file
+                tar --delete -v -P -f $BACKUP_FILE $file
             done
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
             do
-                tar -r -v -f $BACKUP_FILE $file
+                tar -r -v -P -f $BACKUP_FILE $file
             done
         fi
     else
