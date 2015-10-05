@@ -25,6 +25,7 @@ HASHER=""
 BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
+DD_STATUS="none"
 
 #Umount /boot if we mounted it, exit with given exit code
 die ()
@@ -43,7 +44,7 @@ write_hashes ()
     #Write header to ${1}
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
     #Write MBR of MBR_DEVICE to ${1}
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
     #Write hashes of all regular files to ${1}
     ${HASHER} ${MBR_TMP} >> ${1}
     find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
@@ -60,6 +61,12 @@ if grep -q '/boot' /etc/fstab && ! grep -q /boot /etc/mtab
 then
     mount /boot
     BOOT_MOUNTED=1
+fi
+
+# Debian < 8 check
+if which lsb_release > /dev/null && [ "$(lsb_release -si)" == "Debian" ] && [ $(lsb_release -sr | cut -d'.' -f1) -lt 8 ]
+then
+        DD_STATUS="noxfer"
 fi
 
 #Look for config file and set ${MBR_DEVICE}.
@@ -157,7 +164,7 @@ elif [ "${1}" == "check" ]
 then
     [ -f ${DIGEST_FILE} ] || die 9 "No digestfile"
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
-    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=noxfer || die 8
+    dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
     if ! grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee ${LOG_FILE}
     then
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
