@@ -64,7 +64,7 @@ then
 fi
 
 # Debian < 8 check
-if which lsb_release > /dev/null && [ "$(lsb_release -si)" == "Debian" ] && [ $(lsb_release -sr | cut -d'.' -f1) -lt 8 ]
+if which lsb_release > /dev/null 2>&1 && [ "$(lsb_release -si)" == "Debian" ] && [ $(lsb_release -sr | cut -d'.' -f1) -lt 8 ]
 then
         DD_STATUS="noxfer"
 fi
