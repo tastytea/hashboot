@@ -6,8 +6,8 @@
 
 
 # Install
-* Make hashboot.sh executable
-* Place hashboot.sh anywhere in $PATH
+* Make hashboot executable
+* Place hashboot anywhere in $PATH
 * Install the appropriate init script
 * If applicable, copy kernel-hook to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
 
@@ -15,9 +15,9 @@ Also see [INSTALL](https://git.tastytea.de/?p=hashboot.git;a=blob_plain;f=INSTAL
 
 
 # Usage
-* Run "hashboot.sh index" to generate checksums and a backup for /boot and MBR
-* Run "hashboot.sh check" to check /boot and MBR
-* Run "hashboot.sh recover" to replace corrupted files with the backup
+* Run "hashboot index" to generate checksums and a backup for /boot and MBR
+* Run "hashboot check" to check /boot and MBR
+* Run "hashboot recover" to replace corrupted files with the backup
 
 
 # Notes
