@@ -10,7 +10,7 @@ Run "hashboot.sh index" to generate checksums and a backup for /boot and MBR
 Run "hashboot.sh check" to check /boot and MBR
 Run "hashboot.sh recover" to replace corrupted files with the backup
 
-A backup is stored in /var/cache/bootbackup.tar.gz
+A backup is per default stored in /var/cache/bootbackup.tar.gz
 
 You can't use the openrc/sysv init scripts with parallel boot.
 

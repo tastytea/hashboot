@@ -6,7 +6,6 @@
 
 
 # Install
-* Make sure you have sha*sum or md5sum installed
 * Make hashboot.sh executable
 * Place hashboot.sh anywhere in $PATH
 * Install the appropriate init script
@@ -16,14 +15,12 @@ Also see [INSTALL](https://git.tastytea.de/?p=hashboot.git;a=blob_plain;f=INSTAL
 
 
 # Usage
-Run "hashboot.sh index" to generate checksums and a backup for /boot and MBR
-Run "hashboot.sh check" to check /boot and MBR
-Run "hashboot.sh recover" to replace corrupted files with the backup
+* Run "hashboot.sh index" to generate checksums and a backup for /boot and MBR
+* Run "hashboot.sh check" to check /boot and MBR
+* Run "hashboot.sh recover" to replace corrupted files with the backup
 
 
 # Notes
-A backup is stored in /var/cache/bootbackup.tar.gz
-
-You can't use the openrc/sysv init scripts with parallel boot.
-
-Detailed documentation is in the sourcecode.
+* A backup is per default stored in /var/cache/bootbackup.tar.gz
+* You can't use the openrc/sysv init scripts with parallel boot.
+* Detailed documentation is in the sourcecode.

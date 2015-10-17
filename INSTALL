@@ -1,4 +1,3 @@
-* Make sure you have sha*sum or md5sum installed
 * Make hashboot.sh executable
 * Place hashboot.sh anywhere in $PATH
 * Install the appropriate init script
