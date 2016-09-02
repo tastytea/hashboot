@@ -1,2 +1,2 @@
-
+#!/bin/sh
 which hashboot > /dev/null && hashboot check
