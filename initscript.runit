@@ -1,2 +1,3 @@
-#!/bin/sh
-which hashboot > /dev/null && hashboot check
+#!/bin/sh -e
+msg "Checking integrity of /boot"
+/usr/bin/hashboot || emergency_shell
