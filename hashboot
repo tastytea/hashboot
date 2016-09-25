@@ -11,7 +11,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.8.2"
+VERSION="0.8.3"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
