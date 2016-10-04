@@ -12,7 +12,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.9.0"
+VERSION="0.9.1"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -29,9 +29,11 @@ CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
 DD_STATUS="none"
 PROGRAMMER="no" #standard change enables bios mode
-#1=mbr 2=files 3=bios 4=mbr/files 5=mbr/bios 6=files/bios 7=all
-test="5"
-
+#bitmask:
+# 001=mbr
+# 010=files
+# 100=bios
+CKMODES=011
 
 #Umount /boot if we mounted it, exit with given exit code
 die ()
@@ -50,29 +52,30 @@ write_hashes ()
     #Write header to ${1}
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
 
-    case $test in
-        1|4|5|7)
+    if [ $((${CKMODES} & 001)) != 0 ]; then
             #copy mbr to file
             dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
             #Write hash of MBR to ${1}
-            ${HASHER} ${MBR_TMP} >> ${1} ;; esac
-    case $test in
-        3|5|6|7)
+            ${HASHER} ${MBR_TMP} >> ${1}
+    fi
+    if [ $((${CKMODES} & 010)) != 0 ]; then
+            #Write hashes of all regular files to ${1}
+            find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
+    fi
+    if [ $((${CKMODES} & 100)) != 0 ]; then
             #if we set an programmer chip in config
             if [ ! ${PROGRAMMER} == "no" ]; then
                 #read bios to file
                 flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
                 #and write hashes of bios files to ${1}
                 ${HASHER} ${BIOS_TMP} >> ${1}
-            fi ;; esac
-    case $test in
-        2|4|6|7)
-            #Write hashes of all regular files to ${1}
-            find /boot -type f -exec ${HASHER} --binary {} >> ${1} + ;; esac
+            fi
+    fi
 }
 
+
 #If we're not root: exit
-if [ ${UID} -ne 0 ]
+if [ ${UID} != "0" ]
 then
     die 4 "You have to be root"
 fi
@@ -111,11 +114,14 @@ else
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
         echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
         echo -n "Include BIOS check? (y/n)"
-        read b
-        if [ ${b} == "y"]; then
+        read prompt
+        while [[ ! $prompt == "y" || $prompt == "Y" || $prompt == "n" || $prompt == "N" ]]; do
+            read prompt
+        done
+        if [ "${prompt}" == "y" ]; then
             if which flashrom; then
                 flashrom
-                echo -n "Which programmer? (eg. internal)"
+                echo -n "Which programmer? (eg. internal) "
                 read p
                 echo "PROGRAMMER=${p}" >> ${CONFIG_FILE}
             else
@@ -125,18 +131,28 @@ else
         else
             echo "PROGRAMMER=no" >> ${CONFIG_FILE}
         fi
+        echo "What do we check?"
+        echo "001=mbr"
+        echo "010=files"
+        echo "100=bios"
+        echo "eg. 101 for mbr and bios: "
+        read CKMODES
+        echo "CKMODES=$CKMODES" >> ${CONFIG_FILE}
     else
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
         echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
-        echo "test=5" >> ${CONFIG_FILE}
+        echo "CKMODES=$CKMODES" >> ${CONFIG_FILE}
         echo "PROGRAMMER=${PROGRAMMER}" >> ${CONFIG_FILE}
     fi
 fi
 
-case $test in
-    1|4|5|7)
+if [ "${2}" > "1" ]; then
+    CKMODES=${2}
+fi
+
+if [ $((${CKMODES} & 001)) != 0 ]; then
         # Find out where the first partition starts and set ${MBR_SIZE} in KiB
         sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}' )
         if [ "${sectorsize}" == "=" ] # Older versions of util-linux
@@ -156,7 +172,7 @@ case $test in
             echo "Something went wrong. Most likely your partition table is corrupt." >&2
             die 1 "You have to recover the MBR manually by copying the mbr from ${BACKUP_FILE}"
         fi
-;; esac
+fi
 
 if [ "${1}" == "index" ]
 then
@@ -205,37 +221,34 @@ elif [ "${1}" == "check" ]
 then
     [ -f ${DIGEST_FILE} ] || die 9 "No digestfile"
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
-    case $test in
-        1|4|5|7)
+    if [ $((${CKMODES} & 001)) != 0 ]; then
             dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
-                if ! grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee ${LOG_FILE}
-                then
+            if ! grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee ${LOG_FILE}
+            then
                 echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
                 COUNTER=$((COUNTER + 1))
-    fi;; esac
-
-    case $test in
-        3|5|6|7)
-            flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
-            #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
-            if [ ! ${PROGRAMMER} == "no" ]; then
-                if grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
-                then
-                echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
-                COUNTER=$((COUNTER + 10))
-                die $COUNTER
-        fi
-    fi ;; esac
-    case $test in
-        2|4|6|7)
+            fi
+    fi
+    if [ $((${CKMODES} & 010)) != 0 ]; then
             if ! grep -v ${MBR_TMP} ${DIGEST_FILE} | grep -v ${BIOS_TMP} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
             then
                 echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
                 COUNTER=$((COUNTER + 2))
                  die $COUNTER
-            fi ;; esac
-
-
+            fi
+    fi
+    if [ $((${CKMODES} & 100)) != 0 ]; then
+            flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
+            #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
+            if [ ! ${PROGRAMMER} == "no" ]; then
+                if ! grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
+                then
+                    echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
+                    COUNTER=$((COUNTER + 10))
+                    die $COUNTER
+                fi
+            fi
+    fi
 elif [ "${1}" == "recover" ]
 then
     echo "Restoring files from backup... (type yes or no for each file)"
