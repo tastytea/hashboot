@@ -3,7 +3,8 @@
 #Exit codes: 0 = success, 1 = checksum mbr mismatch, 2 = checksum /boot mismatch,
 #3 = checksum mbr/boot mismatch, 4 = not root, 5 = no hasher found, 6 = wrong usage,
 #7 = write error, 8 = dd error, 9 = file not found
-
+#10 = bios mismatch, 11 == mbr&bios mismatch, 12 = files&bios mismatch
+#13 = mbr&bios&files mismatch
 ###################################################################################
 # "THE HUG-WARE LICENSE" (Revision 1):                                            #
 # xo <xo@rotce.de> and tastytea <tastytea@tastytea.de> wrote these files. As long #
@@ -11,7 +12,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.8.3"
+VERSION="0.9.0"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -20,12 +21,14 @@ LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE="/dev/sda"
 MBR_SIZE=1024
 MBR_TMP="/tmp/mbr"
+BIOS_TMP="/tmp/bios"
 BACKUP_FILE="/var/cache/boot-backup.tar"
 HASHER=""
 BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
 DD_STATUS="none"
+PROGRAMMER="no" #standard change enables bios mode
 
 #Umount /boot if we mounted it, exit with given exit code
 die ()
@@ -45,11 +48,17 @@ write_hashes ()
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
     #Write MBR of MBR_DEVICE to ${1}
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
+    #Write bios to ${1}
+    #if we set an programmer chip in config, read bios and write it to digestfile.
+    if [ ! ${PROGRAMMER} == "no" ]; then
+        flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
+        ${HASHER} ${BIOS_TMP} >> ${1}
+    fi
     #Write hashes of all regular files to ${1}
     ${HASHER} ${MBR_TMP} >> ${1}
     find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
 }
-    
+
 #If we're not root: exit
 if [ ${UID} -ne 0 ]
 then
@@ -83,17 +92,33 @@ else
         [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
-    
-        echo -n "Where should backup file be stored? [/var/cache/boot-backup.tar] " 
+
+        echo -n "Where should backup file be stored? [/var/cache/boot-backup.tar] "
         read -r BACKUP_FILE
         [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar"
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
         echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+        echo -n "Include BIOS check? (y/n)"
+        read b
+        if [ ${b} == "y"]; then
+            if which flashrom; then
+                flashrom
+                echo -n "Which programmer? (eg. internal)"
+                read p
+                echo "PROGRAMMER=${p}" >> ${CONFIG_FILE}
+            else
+                echo "No flashrom found. You need to install it."
+                echo "PROGRAMMER=${PROGRAMMER}" >> ${CONFIG_FILE}
+            fi
+        else
+            echo "PROGRAMMER=no" >> ${CONFIG_FILE}
+        fi
     else
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
         echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+        echo "PROGRAMMER=${PROGRAMMER}" >> ${CONFIG_FILE}
     fi
 fi
 
@@ -129,7 +154,7 @@ then
     test -z "${HASHER}" && HASHER=$(/usr/bin/which md5sum 2> /dev/null)
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
-    
+
     #Exists ${DIGEST_FILE}, if true run do magic, else write ${DIGEST_FILE}
     if [ -f ${DIGEST_FILE} ]
     then
@@ -142,9 +167,9 @@ then
         then
             die 0
         else
-            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' ); 
-            do 
-                #lösche_aus_tar
+            for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
+            do
+                #delete from tar
                 tar --delete -v -P -f $BACKUP_FILE $file
             done
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
@@ -156,26 +181,37 @@ then
     mv ${DIGEST_FILE_TMP} ${DIGEST_FILE}
     else
         write_hashes $DIGEST_FILE
-        tar -cpPf ${BACKUP_FILE} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
+        tar -cpPf ${BACKUP_FILE} ${BIOS} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
         echo "Backup written to ${BACKUP_FILE}"
     fi
- 
+
 elif [ "${1}" == "check" ]
 then
     [ -f ${DIGEST_FILE} ] || die 9 "No digestfile"
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
     dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
+    flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
     if ! grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee ${LOG_FILE}
     then
         echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
         COUNTER=$((COUNTER + 1))
     fi
-    if ! grep -v ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
+    if ! grep -v ${MBR_TMP} ${DIGEST_FILE} | grep -v ${BIOS_TMP} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
     then
         echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
         COUNTER=$((COUNTER + 2))
         die $COUNTER
     fi
+    #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
+    if [ ! ${PROGRAMMER} == "no" ]; then
+        if grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
+        then
+            echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
+            COUNTER=$((COUNTER + 10))
+            die $COUNTER
+        fi
+    fi
+
 elif [ "${1}" == "recover" ]
 then
     echo "Restoring files from backup... (type yes or no for each file)"
