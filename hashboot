@@ -12,7 +12,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.9.2"
+VERSION="0.9.3"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -181,9 +181,6 @@ then
     test -z "${HASHER}" && HASHER=$(/usr/bin/which sha384sum 2> /dev/null)
     test -z "${HASHER}" && HASHER=$(/usr/bin/which sha256sum 2> /dev/null)
     test -z "${HASHER}" && HASHER=$(/usr/bin/which sha224sum 2> /dev/null)
-    #It gets insecure below here, but better than nothing?
-    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha1sum 2> /dev/null)
-    test -z "${HASHER}" && HASHER=$(/usr/bin/which md5sum 2> /dev/null)
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
