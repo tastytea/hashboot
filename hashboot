@@ -12,7 +12,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.9.3"
+VERSION="0.9.4"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -115,10 +115,10 @@ else
         echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
         echo -n "Include BIOS check? (y/n)"
         read prompt
-        while [[ ! $prompt == "y" || $prompt == "Y" || $prompt == "n" || $prompt == "N" ]]; do
+        while ! [[ $prompt == "y" || $prompt == "Y" || $prompt == "n" || $prompt == "N" ]]; do
             read prompt
         done
-        if [ "${prompt}" == "y" ]; then
+        if [[ "${prompt}" == "y" || "${prompt}" == "Y" ]]; then
             if which flashrom; then
                 flashrom
                 echo -n "Which programmer? (eg. internal) "
