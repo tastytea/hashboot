@@ -1,6 +1,6 @@
 EAPI="4"
 
-EGIT_REPO_URI="git://git.tastytea.de/repositories/hashboot.git"
+EGIT_REPO_URI="https://github.com/tastytea/hashboot.git"
 
 inherit eutils git-2
 
@@ -8,7 +8,7 @@ DESCRIPTION="Check integrity of files in /boot"
 HOMEPAGE="https://git.tastytea.de/?p=hashboot.git"
 LICENSE="hug-ware"
 SLOT="0"
-KEYWORDS="amd64 x86"
+KEYWORDS=""
 IUSE=""
 
 RDEPEND="
