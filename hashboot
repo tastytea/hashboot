@@ -12,7 +12,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.9.4"
+VERSION="0.9.5"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 
 DIGEST_FILE="/var/lib/hashboot.digest"
@@ -221,7 +221,7 @@ then
     if [ $((${CKMODES} & 001)) != 0 ]; then
         dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
         grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee ${LOG_FILE}
-        if [ ${PIPESTATUS[1]} -ne 0 ]
+        if [ ${PIPESTATUS[2]} -ne 0 ]
         then
             echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
             COUNTER=$((COUNTER + 1))
@@ -229,7 +229,7 @@ then
     fi
     if [ $((${CKMODES} & 010)) != 0 ]; then
         grep -v ${MBR_TMP} ${DIGEST_FILE} | grep -v ${BIOS_TMP} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
-        if [ ${PIPESTATUS[1]} -ne 0 ]
+        if [ ${PIPESTATUS[2]} -ne 0 ]
         then
             echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
             COUNTER=$((COUNTER + 2))
@@ -240,7 +240,7 @@ then
         #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
         if [ ! ${PROGRAMMER} == "no" ]; then
             grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
-            if [ ${PIPESTATUS[1]} -ne 0 ]
+            if [ ${PIPESTATUS[2]} -ne 0 ]
             then
                 echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
                 COUNTER=$((COUNTER + 10))
