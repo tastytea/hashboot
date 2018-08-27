@@ -1,0 +1,4 @@
+# vim: set ts=4 sw=4 et:
+
+msg "Checking boot integrity"
+/usr/bin/hashboot check || emergency_shell
