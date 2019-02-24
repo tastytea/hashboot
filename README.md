@@ -12,6 +12,7 @@ If there is a core- or libreboot bios and flashrom installed, **hashboot** can c
 * Place hashboot anywhere in $PATH
 * Install the appropriate init script
 * If applicable, copy kernel-hook to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
+* To generate the manpage, install asciidoc and run `build_manpage.sh`.
 
 # Usage
 * First run creates a configuration file. Use bitmask to select desired checkroutines

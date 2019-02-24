@@ -22,7 +22,7 @@ boot partition. The checksums and a backup of the contents of `/boot` are stored
 in `/var/lib/hashboot` by default. If a checksum doesn't match, you have the
 option to restore the file from backup.
 
-If there is a core- or libreboot bios and flashrom installed, **hashboot** can
+If there is a core- or libreboot bios and flashrom installed, hashboot can
 check bios for modifications too.
 
 == OPTIONS
