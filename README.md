@@ -4,6 +4,8 @@ boot partition. The checksums and a backup of the contents of `/boot` are stored
 in `/var/lib/hashboot` by default. If a checksum doesn't match, you have the
 option to restore the file from backup.
 
+If there is a core- or libreboot bios and flashrom installed, **hashboot** can check bios for modifications too.
+
 # Install
 
 * Make hashboot executable
@@ -12,7 +14,7 @@ option to restore the file from backup.
 * If applicable, copy kernel-hook to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
 
 # Usage
-
+* First run creates a configuration file. Use bitmask to select desired checkroutines
 * Run "hashboot index" to generate checksums and a backup for /boot and MBR
 * Run "hashboot check" to check /boot and MBR
 * Run "hashboot recover" to replace corrupted files with the backup
