@@ -148,12 +148,7 @@ else
         fi            
 
     else
-        echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
-        echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-        echo "SAVEDIR=/var/lib/hashboot" >> ${CONFIG_FILE}
-        echo "#001=mbr,010=files,100=bios" >> ${CONFIG_FILE}
-        echo "CKMODES=$CKMODES" >> ${CONFIG_FILE}
+        die 9 "No config file found. Run hashboot interactively to generate one."
     fi
 fi
 
