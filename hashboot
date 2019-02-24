@@ -12,7 +12,7 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.9.7"
+VERSION="0.9.8"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 DIGEST_FILE=""
 BACKUP_FILE=""
