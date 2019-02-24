@@ -1,3 +1,9 @@
+**hashboot** hashes all files in `/boot` to check them during early boot. It is
+intended for when you have encrypted the root partition but not the boot
+partition. The checksums are stored in `/var/lib/hashboot.digest` and a backup
+of the contents of `/boot` is stored in `/var/cache/boot-backup.tar`. If a
+checksum doesn't match, you have the option to restore the file from backup.
+
 # License
     "THE HUG-WARE LICENSE" (Revision 1):
     xo <xo@rotce.de> and tastytea <tastytea@tastytea.de> wrote these files. As long
@@ -23,4 +29,3 @@ Also see [INSTALL](https://git.tastytea.de/?p=hashboot.git;a=blob_plain;f=INSTAL
 # Notes
 * A backup is per default stored in /var/cache/bootbackup.tar.gz
 * You can't use the openrc/sysv init scripts with parallel boot.
-* Detailed documentation is in the sourcecode.
