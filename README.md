@@ -26,8 +26,8 @@ If there is a core- or libreboot bios and flashrom installed, **hashboot** can c
 # License
 
 ```PLAIN
-"THE HUG-WARE LICENSE" (Revision 1):
-teldra <teldra@rotce.de> and tastytea <tastytea@tastytea.de> wrote these files.
-As long as you retain this notice you can do whatever you want with this stuff.
-If we meet some day, and you think this stuff is worth it, you can give us a hug.
+"THE HUG-WARE LICENSE" (Revision 2):
+teldra <teldra@rotce.de> and tastytea <tastytea@tastytea.de> wrote this.
+As Long as you retain this notice you can do whatever you want with this.
+If we meet some day, and you think this is nice, you can give us a hug.
 ```
