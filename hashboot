@@ -5,12 +5,12 @@
 #7 = write error, 8 = dd error, 9 = file not found
 #10 = bios mismatch, 11 == mbr&bios mismatch, 12 = files&bios mismatch
 #13 = mbr&bios&files mismatch
-####################################################################################
-# "THE HUG-WARE LICENSE" (Revision 1):                                             #
-# teldra <teldra@rotce.de> and tastytea <tastytea@tastytea.de> wrote these files.  #
-# As Long as you retain this notice you can do whatever you want with this stuff.  #
-# If we meet some day, and you think this stuff is worth it, you can give us a hug.#
-####################################################################################
+###############################################################################
+# "THE HUG-WARE LICENSE" (Revision 2):                                        #
+# teldra <teldra@rotce.de> and tastytea <tastytea@tastytea.de> wrote this.    #
+# As Long as you retain this notice you can do whatever you want with this.   # 
+# If we meet some day, and you think this is nice, you can give us a hug.     #
+###############################################################################
 
 VERSION="0.9.8"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
