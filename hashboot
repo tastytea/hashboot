@@ -42,6 +42,9 @@ die ()
         umount /boot
     fi
 
+    # Delete temporary files
+    rm -f "${DIGEST_FILE_TMP}" "${MBR_TMP}" "${BIOS_TMP}"
+
     [ -z "${2}" ] || echo "${2}" >&2
     exit ${1}
 }
