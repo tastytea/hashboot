@@ -124,6 +124,7 @@ else
 
         echo -n "Where should backup file and digestfile be stored? [/var/lib/hashboot] "
         read -r SAVEDIR
+        [ -z "${SAVEDIR}" ] && SAVEDIR="/var/lib/hashboot"
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
         echo "SAVEDIR=${SAVEDIR}" >> ${CONFIG_FILE}
         DIGEST_FILE="${SAVEDIR}/hashboot.digest"
