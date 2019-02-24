@@ -14,7 +14,7 @@ If there is a core- or libreboot bios and flashrom installed, **hashboot** can c
 * If applicable, copy kernel-hook to /etc/kernel/post{inst,rm}.d/zzz-hashboot (make sure it is called after all other hooks)
 
 # Usage
-* First run creates a configurationfile. Use bitmask to select desired checkroutines
+* First run creates a configuration file. Use bitmask to select desired checkroutines
 * Run "hashboot index" to generate checksums and a backup for /boot and MBR
 * Run "hashboot check" to check /boot and MBR
 * Run "hashboot recover" to replace corrupted files with the backup
