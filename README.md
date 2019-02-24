@@ -1,8 +1,8 @@
-**hashboot** hashes all files in `/boot` to check them during early boot. It is
-intended for when you have encrypted the root partition but not the boot
-partition. The checksums and a backup of the contents of `/boot` are stored in
-`/var/lib/hashboot` by default. If a checksum doesn't match, you have the option
-to restore the file from backup.
+**hashboot** hashes all files in `/boot` and the MBR to check them during early
+boot. It is intended for when you have encrypted the root partition but not the
+boot partition. The checksums and a backup of the contents of `/boot` are stored
+in `/var/lib/hashboot` by default. If a checksum doesn't match, you have the
+option to restore the file from backup.
 
 # Install
 
