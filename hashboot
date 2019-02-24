@@ -106,7 +106,7 @@ then
         sed -i '/BACKUP_FILE/d' ${CONFIG_FILE}
         echo "The backup und the digests have been moved to ${SAVEDIR}"
     fi
-    # here we extrapolate pathes from savedir.
+    # here we extrapolate paths from savedir.
     DIGEST_FILE="${SAVEDIR}/hashboot.digest"
     BACKUP_FILE="${SAVEDIR}/boot-backup.tar"
 #If not found, create one and ask for ${MBR_DEVICE}
