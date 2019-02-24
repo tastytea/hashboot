@@ -1,0 +1,53 @@
+= hashboot(1)
+tastytea <tastytea@tastytea.de>; teldra <teldra@rotce.de>
+:Date:          2019-02-24
+:Revision:      0.9.8
+:man source:    hashboot
+:man version:   {revision}
+:man manual:    General Commands Manual
+
+== NAME
+
+hashboot - allows you to execute files from compiled languages as scripts.
+
+== SYNOPSIS
+
+*hashboot* _index_|_check_|_recover_
+
+== DESCRIPTION
+
+hashboot hashes all files in `/boot` and the MBR to check them during early
+boot. It is intended for when you have encrypted the root partition but not the
+boot partition. The checksums and a backup of the contents of `/boot` are stored
+in `/var/lib/hashboot` by default. If a checksum doesn't match, you have the
+option to restore the file from backup.
+
+If there is a core- or libreboot bios and flashrom installed, **hashboot** can
+check bios for modifications too.
+
+== OPTIONS
+
+[format="csv",frame="none",grid="none"]
+|======
+*index*,generate checksums and a backup for `/boot` MBR and BIOS.
+*check*,check `/boot` MBR and BIOS.
+*recover*,replace corrupted files with the backup.
+|======
+
+== CONFIGURATION
+
+The configuration file is in `/etc/hashboot.conf`.
+
+=== Possible options
+
+[format="csv",frame="none",grid="none"]
+|======
+SAVEDIR,The checksums and the backup are stored here.
+CKMODES,001=mbr 010=files 100=bios.
+MBR_DEVICE,Device with the MBR on it.
+|======
+
+
+== REPORTING BUGS
+
+Bugtracker: https://github.com/tastytea/hashboot/issues
