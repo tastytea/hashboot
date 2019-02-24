@@ -27,12 +27,12 @@ check bios for modifications too.
 
 == OPTIONS
 
-[format="csv",frame="none",grid="none"]
-|======
-*index*,generate checksums and a backup for `/boot` MBR and BIOS.
-*check*,check `/boot` MBR and BIOS.
-*recover*,replace corrupted files with the backup.
-|======
+[frame="none",grid="none"]
+|============
+| *index*   | generate checksums and a backup for `/boot`, MBR and BIOS.
+| *check*   | check `/boot`, MBR and BIOS.
+| *recover* | replace corrupted files with the backup.
+|============
 
 == CONFIGURATION
 
@@ -40,12 +40,12 @@ The configuration file is in `/etc/hashboot.conf`.
 
 === Possible options
 
-[format="csv",frame="none",grid="none"]
-|======
-SAVEDIR,The checksums and the backup are stored here.
-CKMODES,001=mbr 010=files 100=bios.
-MBR_DEVICE,Device with the MBR on it.
-|======
+[frame="none",grid="none"]
+|============
+|SAVEDIR    | The checksums and the backup are stored here.
+|CKMODES    | 001=mbr, 010=files, 100=bios.
+|MBR_DEVICE | Device with the MBR on it.
+|============
 
 
 == REPORTING BUGS
