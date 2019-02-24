@@ -8,7 +8,7 @@ tastytea <tastytea@tastytea.de>; teldra <teldra@rotce.de>
 
 == NAME
 
-hashboot - allows you to execute files from compiled languages as scripts.
+hashboot - generate checksums and a backup for `/boot` MBR and BIOS.
 
 == SYNOPSIS
 
