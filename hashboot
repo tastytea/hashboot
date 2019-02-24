@@ -152,10 +152,6 @@ else
     fi
 fi
 
-if [ "${2}" > "1" ]; then
-    CKMODES=${2}
-fi
-
 if [ $((${CKMODES} & 001)) -ne 0 ]; then
     # Find out where the first partition starts and set ${MBR_SIZE} in KiB
     sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}' )
