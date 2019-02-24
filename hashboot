@@ -12,17 +12,17 @@
 # meet some day, and you think this stuff is worth it, you can give us a hug.     #
 ###################################################################################
 
-VERSION="0.9.5"
+VERSION="0.9.7"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
-
-DIGEST_FILE="/var/lib/hashboot.digest"
+DIGEST_FILE=""
+BACKUP_FILE=""
+SAVEDIR=""
 DIGEST_FILE_TMP="/tmp/hashboot.digesttmp"
 LOG_FILE="/tmp/hashboot.log"
 MBR_DEVICE="/dev/sda"
 MBR_SIZE=1024
 MBR_TMP="/tmp/mbr"
 BIOS_TMP="/tmp/bios"
-BACKUP_FILE="/var/cache/boot-backup.tar"
 HASHER=""
 BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
@@ -97,6 +97,20 @@ fi
 if [ -f ${CONFIG_FILE} ]
 then
     source ${CONFIG_FILE} || die 9 "Error reading config file"
+    #compatibility to old cfg format
+    if [ ! -z "${BACKUP_FILE}" ]; then
+        SAVEDIR="/var/lib/hashboot"
+        echo "SAVEDIR=${SAVEDIR}" >> ${CONFIG_FILE}
+        mkdir -p ${SAVEDIR}
+        mv ${BACKUP_FILE} ${SAVEDIR}
+        mv /var/lib/hashboot.digest ${SAVEDIR}
+        ln -s "${SAVEDIR}/boot-backup.tar" "${BACKUP_FILE}"
+        ln -s "${SAVEDIR}/hashboot.digest" "/var/lib/hashboot.digest"
+        sed -i '/BACKUP_FILE/d' ${CONFIG_FILE}
+        echo "The backup und the digests have been moved to ${SAVEDIR}"
+    fi
+    DIGEST_FILE="${SAVEDIR}/hashboot.digest"
+    BACKUP_FILE="${SAVEDIR}/boot-backup.tar"
 #If not found, create one and ask for ${MBR_DEVICE}
 else
     #Create ${CONFIG_FILE} with defaults if noninterctive
@@ -108,11 +122,13 @@ else
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
 
-        echo -n "Where should backup file be stored? [/var/cache/boot-backup.tar] "
-        read -r BACKUP_FILE
-        [ -z "${BACKUP_FILE}" ] && BACKUP_FILE="/var/cache/boot-backup.tar"
+        echo -n "Where should backup file and digestfile be stored? [/var/lib/hashboot] "
+        read -r SAVEDIR
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-        echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+        echo "SAVEDIR=${SAVEDIR}" >> ${CONFIG_FILE}
+        DIGEST_FILE="${SAVEDIR}/hashboot.digest"
+        BACKUP_FILE="${SAVEDIR}/boot-backup.tar"
+        mkdir -p ${SAVEDIR}
         echo -n "Include BIOS check? (y/n)"
         read prompt
         while ! [[ $prompt == "y" || $prompt == "Y" || $prompt == "n" || $prompt == "N" ]]; do
