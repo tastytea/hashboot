@@ -52,19 +52,19 @@ write_hashes ()
     #Write header to ${1}
     echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
 
-    if [ $((${CKMODES} & 001)) != 0 ]; then
+    if [ $((${CKMODES} & 001)) -ne 0 ]; then
         #copy mbr to file
         dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
         #Write hash of MBR to ${1}
         ${HASHER} ${MBR_TMP} >> ${1}
     fi
-    if [ $((${CKMODES} & 010)) != 0 ]; then
+    if [ $((${CKMODES} & 010)) -ne 0 ]; then
         #Write hashes of all regular files to ${1}
         find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
     fi
     if [ $((${CKMODES} & 100)) != 0 ]; then
         #if we set an programmer chip in config
-        if [ ! ${PROGRAMMER} == "no" ]; then
+        if [ ! "${PROGRAMMER}" == "no" ]; then
             #read bios to file
             flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
             #and write hashes of bios files to ${1}
@@ -75,7 +75,7 @@ write_hashes ()
 
 
 #If we're not root: exit
-if [ ${UID} != "0" ]
+if [ ${UID} -ne 0 ]
 then
     die 4 "You have to be root"
 fi
@@ -148,11 +148,11 @@ else
     fi
 fi
 
-if [ "${2}" > "1" ]; then
+if [ ${2} -gt 1 ]; then
     CKMODES=${2}
 fi
 
-if [ $((${CKMODES} & 001)) != 0 ]; then
+if [ $((${CKMODES} & 001)) -ne 0 ]; then
     # Find out where the first partition starts and set ${MBR_SIZE} in KiB
     sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}' )
     if [ "${sectorsize}" == "=" ] # Older versions of util-linux
@@ -227,7 +227,7 @@ then
             COUNTER=$((COUNTER + 1))
         fi
     fi
-    if [ $((${CKMODES} & 010)) != 0 ]; then
+    if [ $((${CKMODES} & 010)) -ne 0 ]; then
         grep -v ${MBR_TMP} ${DIGEST_FILE} | grep -v ${BIOS_TMP} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
         if [ ${PIPESTATUS[2]} -ne 0 ]
         then
@@ -235,7 +235,7 @@ then
             COUNTER=$((COUNTER + 2))
         fi
     fi
-    if [ $((${CKMODES} & 100)) != 0 ]; then
+    if [ $((${CKMODES} & 100)) -ne 0 ]; then
         flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
         #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
         if [ ! ${PROGRAMMER} == "no" ]; then
