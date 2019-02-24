@@ -213,7 +213,14 @@ then
     mv ${DIGEST_FILE_TMP} ${DIGEST_FILE}
     else
         write_hashes $DIGEST_FILE
-        tar -cpPf ${BACKUP_FILE} ${BIOS_TMP} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
+        INCLUDE_FILES=""
+        if [ -f "${MBR_TMP}" ]; then
+            INCLUDE_FILES="${INCLUDE_FILES} ${MBR_TMP}"
+        fi
+        if [ -f "${BIOS_TMP}" ]; then
+            INCLUDE_FILES="${BIOS_TMP}"
+        fi
+        tar -cpPf "${BACKUP_FILE}" ${INCLUDE_FILES} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
         echo "Backup written to ${BACKUP_FILE}"
     fi
 
