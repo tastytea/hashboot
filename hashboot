@@ -28,7 +28,6 @@ BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
 DD_STATUS="none"
-PROGRAMMER="no" #standard change enables bios mode
 #bitmask:
 # 001=mbr
 # 010=files
@@ -62,14 +61,12 @@ write_hashes ()
         #Write hashes of all regular files to ${1}
         find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
     fi
-    if [ $((${CKMODES} & 100)) != 0 ]; then
-        #if we set an programmer chip in config
-        if [ ! "${PROGRAMMER}" == "no" ]; then
-            #read bios to file
-            flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
-            #and write hashes of bios files to ${1}
-            ${HASHER} ${BIOS_TMP} >> ${1}
-        fi
+    if [ $((${CKMODES} & 100)) -ne 0 ]; then
+        #read bios to file
+        flashrom --programmer internal -r ${BIOS_TMP} > /dev/null 2>&1
+        #and write hashes of bios files to ${1}
+        ${HASHER} ${BIOS_TMP} >> ${1}
+
     fi
 }
 
@@ -109,6 +106,7 @@ then
         sed -i '/BACKUP_FILE/d' ${CONFIG_FILE}
         echo "The backup und the digests have been moved to ${SAVEDIR}"
     fi
+    # here we extrapolate pathes from savedir.
     DIGEST_FILE="${SAVEDIR}/hashboot.digest"
     BACKUP_FILE="${SAVEDIR}/boot-backup.tar"
 #If not found, create one and ask for ${MBR_DEVICE}
@@ -116,52 +114,46 @@ else
     #Create ${CONFIG_FILE} with defaults if noninterctive
     if [ -t "0" ]
     then
-        echo -n "Which device contains the MBR? [/dev/sda] "
-        read -r MBR_DEVICE
-        [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
-        echo "#Device with the MBR on it" > ${CONFIG_FILE}
-        echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
-
         echo -n "Where should backup file and digestfile be stored? [/var/lib/hashboot] "
         read -r SAVEDIR
         [ -z "${SAVEDIR}" ] && SAVEDIR="/var/lib/hashboot"
-        echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
+        echo "#Where the Backup files are stored" > ${CONFIG_FILE}
         echo "SAVEDIR=${SAVEDIR}" >> ${CONFIG_FILE}
         DIGEST_FILE="${SAVEDIR}/hashboot.digest"
         BACKUP_FILE="${SAVEDIR}/boot-backup.tar"
         mkdir -p ${SAVEDIR}
-        echo -n "Include BIOS check? (y/n)"
-        read prompt
-        while ! [[ $prompt == "y" || $prompt == "Y" || $prompt == "n" || $prompt == "N" ]]; do
-            read prompt
-        done
-        if [[ "${prompt}" == "y" || "${prompt}" == "Y" ]]; then
-            if which flashrom; then
-                flashrom
-                echo -n "Which programmer? (eg. internal) "
-                read p
-                echo "PROGRAMMER=${p}" >> ${CONFIG_FILE}
-            else
-                echo "No flashrom found. You need to install it."
-                echo "PROGRAMMER=${PROGRAMMER}" >> ${CONFIG_FILE}
-            fi
-        else
-            echo "PROGRAMMER=no" >> ${CONFIG_FILE}
-        fi
+
         echo "What do we check?"
         echo "001=mbr"
         echo "010=files"
-        echo "100=bios"
+        echo "100=core-/libreboot bios"
         echo "eg. 101 for mbr and bios: "
         read CKMODES
+        echo "#001=mbr,010=files,100=bios" >> ${CONFIG_FILE}
         echo "CKMODES=$CKMODES" >> ${CONFIG_FILE}
+
+        if [ $((${CKMODES} & 001)) -ne 0 ]; then
+            echo -n "Which device contains the MBR? [/dev/sda] "
+            read -r MBR_DEVICE
+            [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
+            echo "#Device with the MBR on it" >> ${CONFIG_FILE}
+            echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
+        fi
+
+        if [ $((${CKMODES} & 100)) -ne 0 ]; then
+            if ! which flashrom; then
+                echo "You need to have flashrom installed!"
+                echo "Currently it is not installed, don't reboot"
+            fi
+        fi            
+
     else
         echo "#Device with the MBR on it" > ${CONFIG_FILE}
         echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
         echo "#Where the Backup files are stored" >> ${CONFIG_FILE}
-        echo "BACKUP_FILE=${BACKUP_FILE}" >> ${CONFIG_FILE}
+        echo "SAVEDIR=/var/lib/hashboot" >> ${CONFIG_FILE}
+        echo "#001=mbr,010=files,100=bios" >> ${CONFIG_FILE}
         echo "CKMODES=$CKMODES" >> ${CONFIG_FILE}
-        echo "PROGRAMMER=${PROGRAMMER}" >> ${CONFIG_FILE}
     fi
 fi
 
@@ -227,7 +219,7 @@ then
     mv ${DIGEST_FILE_TMP} ${DIGEST_FILE}
     else
         write_hashes $DIGEST_FILE
-        tar -cpPf ${BACKUP_FILE} ${BIOS} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
+        tar -cpPf ${BACKUP_FILE} ${BIOS_TMP} ${MBR_TMP} /boot ${DIGEST_FILE} || die 7 "Error writing ${BACKUP_FILE}"
         echo "Backup written to ${BACKUP_FILE}"
     fi
 
@@ -253,16 +245,15 @@ then
         fi
     fi
     if [ $((${CKMODES} & 100)) -ne 0 ]; then
-        flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
+        flashrom --programmer internal -r ${BIOS_TMP} > /dev/null 2>&1
         #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
-        if [ ! ${PROGRAMMER} == "no" ]; then
-            grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
-            if [ ${PIPESTATUS[2]} -ne 0 ]
-            then
-                echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
-                COUNTER=$((COUNTER + 10))
-            fi
+        grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
+        if [ ${PIPESTATUS[2]} -ne 0 ]
+        then
+            echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
+            COUNTER=$((COUNTER + 10))
         fi
+
     fi
 
     if [ ${COUNTER} -gt 0 ]; then
