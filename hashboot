@@ -148,7 +148,7 @@ else
     fi
 fi
 
-if [ ${2} -gt 1 ]; then
+if [ "${2}" > "1" ]; then
     CKMODES=${2}
 fi
 
