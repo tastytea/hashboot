@@ -45,6 +45,7 @@ The configuration file is in `/etc/hashboot.conf`.
 |SAVEDIR    | The checksums and the backup are stored here.
 |CKMODES    | 001=mbr, 010=files, 100=bios.
 |MBR_DEVICE | Device with the MBR on it.
+|PROGRAMMER | Use this programmer instead of "internal". Will be passed to flashrom.
 |============
 
 
