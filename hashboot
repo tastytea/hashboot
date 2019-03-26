@@ -12,7 +12,7 @@
 # If we meet some day, and you think this is nice, you can give us a hug.     #
 ###############################################################################
 
-VERSION="0.9.9"
+VERSION="0.9.10"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 DIGEST_FILE=""
 BACKUP_FILE=""
@@ -28,6 +28,7 @@ BOOT_MOUNTED=0
 CONFIG_FILE="/etc/hashboot.cfg"
 COUNTER=0
 DD_STATUS="none"
+PROGRAMMER=${PROGRAMMER:=internal}
 #bitmask:
 # 001=mbr
 # 010=files
@@ -66,7 +67,7 @@ write_hashes ()
     fi
     if [ $((${CKMODES} & 100)) -ne 0 ]; then
         #read bios to file
-        flashrom --programmer internal -r ${BIOS_TMP} > /dev/null 2>&1
+        flashrom --programmer $PROGRAMMER -r ${BIOS_TMP} > /dev/null 2>&1
         #and write hashes of bios files to ${1}
         ${HASHER} ${BIOS_TMP} >> ${1}
 
@@ -147,6 +148,8 @@ else
             if ! which flashrom; then
                 echo "You need to have flashrom installed!"
                 echo "Currently it is not installed, don't reboot"
+                echo "If you need another programmer than internal"
+                echo "use the variable \$PROGRAMMER in $CONFIG_FILE\!"
             fi
         fi            
 
@@ -246,7 +249,7 @@ then
         fi
     fi
     if [ $((${CKMODES} & 100)) -ne 0 ]; then
-        flashrom --programmer internal -r ${BIOS_TMP} > /dev/null 2>&1
+        flashrom --programmer $PROGRAMMER -r ${BIOS_TMP} > /dev/null 2>&1
         #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
         grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
         if [ ${PIPESTATUS[2]} -ne 0 ]
