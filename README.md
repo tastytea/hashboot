@@ -22,6 +22,11 @@ xbps-install -S hashboot
 Ebuilds are available via the
 [tastytea repository](https://schlomp.space/tastytea/overlay).
 
+``` shellsession
+emerge -a sys-apps/hashboot
+rc-update add hashboot boot
+```
+
 ## Manual
 
 * Make hashboot executable
