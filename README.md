@@ -42,6 +42,8 @@ Ebuilds are available via the
 # Notes
 
 * You can't use the openrc/sysv init scripts with parallel boot.
+* The systemd and SysVinit init scripts have not been tested in a while, but
+will probably work.
 
 # License
 
