@@ -9,6 +9,21 @@ installed, **hashboot** can check the BIOS for modifications too.
 
 # Install
 
+## Packages
+
+### Void Linux
+
+``` shellsession
+xbps-install -S hashboot
+```
+
+### Gentoo
+
+Ebuilds are available via the
+[tastytea repository](https://schlomp.space/tastytea/overlay).
+
+## Manual
+
 * Make hashboot executable
 * Place hashboot anywhere in ${PATH}
 * Install the appropriate init script
