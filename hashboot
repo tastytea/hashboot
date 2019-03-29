@@ -8,7 +8,7 @@
 ###############################################################################
 # "THE HUG-WARE LICENSE" (Revision 2):                                        #
 # teldra <teldra@rotce.de> and tastytea <tastytea@tastytea.de> wrote this.    #
-# As Long as you retain this notice you can do whatever you want with this.   # 
+# As Long as you retain this notice you can do whatever you want with this.   #
 # If we meet some day, and you think this is nice, you can give us a hug.     #
 ###############################################################################
 
@@ -151,7 +151,7 @@ else
                 echo "If you need another programmer than internal"
                 echo "use the variable PROGRAMMER in $CONFIG_FILE\!"
             fi
-        fi            
+        fi
 
     else
         die 9 "No config file found. Run hashboot interactively to generate one."
