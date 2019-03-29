@@ -3,9 +3,9 @@
 ### BEGIN INIT INFO
 # Provides:          hashboot
 # Required-Start:    $mountall
-# Required-Stop:     
+# Required-Stop:
 # Default-Start:     S
-# Default-Stop:      
+# Default-Stop:
 # Short-Description: Check integrity of files in /boot
 ### END INIT INFO
 
@@ -15,44 +15,42 @@
 test -x $(which hashboot) || exit 255
 
 case "$1" in
-	start)
-		log_daemon_msg "Checking integrity of files in /boot"
+    start)
+        log_daemon_msg "Checking integrity of files in /boot"
 
-		hashboot check
-		if [ $? -gt 0 ] && [ $? -le 3 ]
-		then
-			log_end_msg 4
-			
-			echo -n "Recover files? [y/N] "
-			read -r yesno
-			if [ "${yesno}" == "y" ]
-			then
-				hashboot recover
-			fi
+        hashboot check
+        ret=$?
+        if [ ${ret} -ge 1 ] && [ ${ret} -le 3 ] || [ ${ret} -ge 10 ] && [ ${ret} -le 13 ]; then
+            log_end_msg ${ret}
 
-			echo "Dropping to shell. Type exit to continue."
-			sh
-			exit 3
-		elif [ $? != 0 ]
-		then
-			log_end_msg $?
-			exit $?
-		fi
-		
-		log_end_msg 0
-		;;
-	stop)
-		# No-op
+            echo -n "Recover files? [y/N] "
+            read -r yesno
+            if [ "${yesno}" == "y" ]; then
+                hashboot recover
+            fi
 
-		;;
-	restart|reload|force-reload|status)
-		echo "Error: argument '$1' not supported" >&2
-		exit 1
-		;;
-	*)
-		echo "Usage: /etc/init.d/hashboot {start|stop}"
-		exit 1
-		;;
+            echo "Dropping to shell. Type exit to continue."
+            sh
+            exit ${ret}
+        elif [ ${ret} != 0 ]; then
+             log_end_msg ${ret}
+             eerror "Unexpected error number ${ret}."
+             exit ${ret}
+        fi
+
+        log_end_msg 0
+        ;;
+    stop)
+        # No-op
+        ;;
+    restart|reload|force-reload|status)
+        echo "Error: argument '$1' not supported" >&2
+        exit 1
+        ;;
+    *)
+        echo "Usage: /etc/init.d/hashboot {start|stop}"
+        exit 1
+        ;;
 esac
 
 exit 0
