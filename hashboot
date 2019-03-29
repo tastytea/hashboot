@@ -12,7 +12,7 @@
 # If we meet some day, and you think this is nice, you can give us a hug.     #
 ###############################################################################
 
-VERSION="0.9.10"
+VERSION="0.9.12"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 DIGEST_FILE=""
 BACKUP_FILE=""
