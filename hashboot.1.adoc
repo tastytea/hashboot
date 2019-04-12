@@ -1,6 +1,6 @@
 = hashboot(1)
 tastytea <tastytea@tastytea.de>; teldra <teldra@rotce.de>
-:Date:          2019-02-24
+:Date:          2019-04-12
 :Revision:      0.9.8
 :man source:    hashboot
 :man version:   {revision}
@@ -27,12 +27,14 @@ check bios for modifications too.
 
 == OPTIONS
 
-[frame="none",grid="none"]
-|============
-| *index*   | generate checksums and a backup for `/boot`, MBR and BIOS.
-| *check*   | check `/boot`, MBR and BIOS.
-| *recover* | replace corrupted files with the backup.
-|============
+*index*::
+    generate checksums and a backup for `/boot`, MBR and BIOS.
+
+*check*::
+    check `/boot`, MBR and BIOS.
+
+*recover*::
+    replace corrupted files with the backup.
 
 == CONFIGURATION
 
