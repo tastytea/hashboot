@@ -29,6 +29,12 @@ rc-update add hashboot boot
 
 ## Manual
 
+### Arch Linux
+
+Go to [the Arch installation instructions](arch_instructions.md).
+
+### Any distro
+
 * Make hashboot executable
 * Place hashboot anywhere in ${PATH}
 * Install the appropriate init script
