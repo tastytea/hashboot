@@ -12,6 +12,8 @@
 # If we meet some day, and you think this is nice, you can give us a hug.     #
 ###############################################################################
 
+# shellcheck disable=SC2181     # ($?)
+
 VERSION="0.9.12"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
 DIGEST_FILE=""
@@ -64,7 +66,8 @@ write_hashes ()
     fi
     if [ $((CKMODES & 010)) -ne 0 ]; then
         #Write hashes of all regular files to ${file}
-        find /boot -type f -exec ${HASHER} --binary {} >> "${file}" +
+        # shellcheck disable=SC2227
+        find /boot -type f -exec sh -c ${HASHER} --binary "${1}" >> "${file}" _ {} +
     fi
     if [ $((CKMODES & 100)) -ne 0 ]; then
         #read bios to file
@@ -272,6 +275,7 @@ then
     echo "Restoring files from backup... (type yes or no for each file)"
 
     #For each failed file: ask if it should be recovered from backup
+    # shellcheck disable=2013
     for file in $(cut -d: -f1 ${LOG_FILE})
     do
         tar -xpPvwf ${BACKUP_FILE} "${file}"
