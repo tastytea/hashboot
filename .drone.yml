@@ -71,7 +71,7 @@ steps:
   pull: always
   commands:
   - rm /etc/apt/apt.conf.d/docker-clean
-  - rm /var/cache/apt/archives/lock
+  - rm -f /var/cache/apt/archives/lock
   - apt-get update -q
   - apt-get install -qy gnupg
   - gpg --import /var/autosign_gpg.key
