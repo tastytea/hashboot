@@ -7,6 +7,10 @@ option to restore the file from backup.
 If there is a core- or libreboot BIOS and [flashrom](https://flashrom.org/)
 installed, **hashboot** can check the BIOS for modifications too.
 
+We moved our code to
+[schlomp.space](https://schlomp.space/tastytea/hashboot) but we keep the
+[GitHub-repo](https://github.com/tastytea/hashboot) as a mirror.
+
 # Install
 
 ## Packages
@@ -34,6 +38,11 @@ rc-update add hashboot boot
 Go to [the Arch installation instructions](arch_instructions.md).
 
 ### Any distro
+
+The releases on
+[schlomp.space](https://schlomp.space/tastytea/hashboot/releases) are
+PGP-signed. The key-ID is `F7301ADFC9ED262448C42B64242E5AC4DA587BF9`
+(`242E5AC4DA587BF9`).
 
 * Make hashboot executable
 * Place hashboot anywhere in ${PATH}
