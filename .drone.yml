@@ -1,43 +1,43 @@
-# kind: pipeline
-# name: check
+kind: pipeline
+name: check
 
-# volumes:
-# - name: debian-package-cache
-#   host:
-#     path: /var/cache/debian-package-cache
+volumes:
+- name: debian-package-cache
+  host:
+    path: /var/cache/debian-package-cache
 
-# trigger:
-#   event:
-#     exclude:
-#     - tag
+trigger:
+  event:
+    exclude:
+    - tag
 
-# - name: shellcheck
-#   image: debian:stretch-slim
-#   pull: always
-#   commands:
-#   - rm /etc/apt/apt.conf.d/docker-clean
-#   - rm /var/cache/apt/archives/lock
-#   - apt-get update -q
-#   - apt-get install -qy shellcheck
-#   - shellcheck hashboot
-#   volumes:
-#   - name: debian-package-cache
-#     path: /var/cache/apt/archives
+- name: shellcheck
+  image: debian:stretch-slim
+  pull: always
+  commands:
+  - rm /etc/apt/apt.conf.d/docker-clean
+  - rm /var/cache/apt/archives/lock
+  - apt-get update -q
+  - apt-get install -qy shellcheck
+  - shellcheck hashboot
+  volumes:
+  - name: debian-package-cache
+    path: /var/cache/apt/archives
 
-# - name: notify
-#   image: drillster/drone-email
-#   pull: always
-#   settings:
-#     host: cryptoparty-celle.de
-#     from: drone@tzend.de
-#     username:
-#       from_secret: email_username
-#     password:
-#       from_secret: email_password
-#   when:
-#     status: [ changed, failure ]
+- name: notify
+  image: drillster/drone-email
+  pull: always
+  settings:
+    host: cryptoparty-celle.de
+    from: drone@tzend.de
+    username:
+      from_secret: email_username
+    password:
+      from_secret: email_password
+  when:
+    status: [ changed, failure ]
 
-# ---
+---
 
 kind: pipeline
 name: release
