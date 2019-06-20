@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Regenerating hashboot checksums...
+When = PostTransaction
+Exec = /usr/bin/hashboot index
+Depends = hashboot
