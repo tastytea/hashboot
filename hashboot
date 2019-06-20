@@ -47,29 +47,30 @@ die ()
     rm -f "${DIGEST_FILE_TMP}" "${MBR_TMP}" "${BIOS_TMP}"
 
     [ -z "${2}" ] || echo "${2}" >&2
-    exit ${1}
+    exit "${1}"
 }
 
 write_hashes ()
 {
-    #Write header to ${1}
-    echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > ${1}
+    local file="${1}"
+    #Write header to ${file}
+    echo "#hashboot ${VERSION} - Algorithm: $(basename ${HASHER})" > "${file}"
 
-    if [ $((${CKMODES} & 001)) -ne 0 ]; then
+    if [ $((CKMODES & 001)) -ne 0 ]; then
         #copy mbr to file
         dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
-        #Write hash of MBR to ${1}
-        ${HASHER} ${MBR_TMP} >> ${1}
+        #Write hash of MBR to ${file}
+        ${HASHER} ${MBR_TMP} >> "${file}"
     fi
-    if [ $((${CKMODES} & 010)) -ne 0 ]; then
-        #Write hashes of all regular files to ${1}
-        find /boot -type f -exec ${HASHER} --binary {} >> ${1} +
+    if [ $((CKMODES & 010)) -ne 0 ]; then
+        #Write hashes of all regular files to ${file}
+        find /boot -type f -exec ${HASHER} --binary {} >> "${file}" +
     fi
-    if [ $((${CKMODES} & 100)) -ne 0 ]; then
+    if [ $((CKMODES & 100)) -ne 0 ]; then
         #read bios to file
         flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
-        #and write hashes of bios files to ${1}
-        ${HASHER} ${BIOS_TMP} >> ${1}
+        #and write hashes of bios files to ${file}
+        ${HASHER} ${BIOS_TMP} >> "${file}"
 
     fi
 }
@@ -89,7 +90,9 @@ then
 fi
 
 # Debian < 8 check
-if which lsb_release > /dev/null 2>&1 && [ "$(lsb_release -si)" == "Debian" ] && [ $(lsb_release -sr | cut -d'.' -f1) -lt 8 ]
+if command -v lsb_release > /dev/null \
+        && [ "$(lsb_release -si)" == "Debian" ] \
+        && [ "$(lsb_release -sr | cut -d'.' -f1)" -lt 8 ]
 then
     DD_STATUS="noxfer"
 fi
@@ -97,9 +100,10 @@ fi
 #Look for config file and set ${MBR_DEVICE}.
 if [ -f ${CONFIG_FILE} ]
 then
+    # shellcheck source=/dev/null
     source ${CONFIG_FILE} || die 9 "Error reading config file"
     #compatibility to old cfg format
-    if [ ! -z "${BACKUP_FILE}" ]; then
+    if [ -n "${BACKUP_FILE}" ]; then
         SAVEDIR="/var/lib/hashboot"
         echo "SAVEDIR=${SAVEDIR}" >> ${CONFIG_FILE}
         mkdir -p ${SAVEDIR}
@@ -132,11 +136,11 @@ else
         echo "010=files"
         echo "100=core-/libreboot bios"
         echo "eg. 101 for mbr and bios: "
-        read CKMODES
+        read -r CKMODES
         echo "#001=mbr,010=files,100=bios" >> ${CONFIG_FILE}
         echo "CKMODES=$CKMODES" >> ${CONFIG_FILE}
 
-        if [ $((${CKMODES} & 001)) -ne 0 ]; then
+        if [ $((CKMODES & 001)) -ne 0 ]; then
             echo -n "Which device contains the MBR? [/dev/sda] "
             read -r MBR_DEVICE
             [ -z "${MBR_DEVICE}" ] && MBR_DEVICE="/dev/sda"
@@ -144,8 +148,8 @@ else
             echo "MBR_DEVICE=${MBR_DEVICE}" >> ${CONFIG_FILE}
         fi
 
-        if [ $((${CKMODES} & 100)) -ne 0 ]; then
-            if ! which flashrom; then
+        if [ $((CKMODES & 100)) -ne 0 ]; then
+            if ! command -v flashrom > /dev/null; then
                 echo "You need to have flashrom installed!"
                 echo "Currently it is not installed, don't reboot"
                 echo "If you need another programmer than internal"
@@ -158,7 +162,7 @@ else
     fi
 fi
 
-if [ $((${CKMODES} & 001)) -ne 0 ]; then
+if [ $((CKMODES & 001)) -ne 0 ]; then
     # Find out where the first partition starts and set ${MBR_SIZE} in KiB
     sectorsize=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep '^Units' | awk '{print $8}' )
     if [ "${sectorsize}" == "=" ] # Older versions of util-linux
@@ -171,7 +175,7 @@ if [ $((${CKMODES} & 001)) -ne 0 ]; then
         startsector=$(LC_ALL=C fdisk -l ${MBR_DEVICE} | grep -A1 'Device' | tail -n1 | awk '{print $3}' )
     fi
 
-    MBR_SIZE=$(expr ${sectorsize} \* ${startsector} / 1024)
+    MBR_SIZE=$((sectorsize * startsector / 1024))
 
     if [ ${?} != 0 ]
     then
@@ -183,10 +187,10 @@ fi
 if [ "${1}" == "index" ]
 then
     #Try different hashers, use the most secure
-    HASHER=$(/usr/bin/which sha512sum 2> /dev/null)
-    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha384sum 2> /dev/null)
-    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha256sum 2> /dev/null)
-    test -z "${HASHER}" && HASHER=$(/usr/bin/which sha224sum 2> /dev/null)
+    HASHER=$(command -v sha512sum > /dev/null)
+    test -z "${HASHER}" && HASHER=$(command -v sha384sum > /dev/null)
+    test -z "${HASHER}" && HASHER=$(command -v sha256sum > /dev/null)
+    test -z "${HASHER}" && HASHER=$(command -v sha224sum > /dev/null)
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
@@ -205,11 +209,11 @@ then
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '<' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
             do
                 #delete from tar
-                tar --delete -v -P -f $BACKUP_FILE $file
+                tar --delete -v -P -f ${BACKUP_FILE} "${file}"
             done
             for file in $(diff ${DIGEST_FILE} ${DIGEST_FILE_TMP} | grep -v '#hashboot' | grep '>' | cut -d'*' -f2 | sed 's/\ /\\ /g' );
             do
-                tar -r -v -P -f $BACKUP_FILE $file
+                tar -r -v -P -f $BACKUP_FILE "${file}"
             done
         fi
     #nur, wenn das updaten des Backups geklappt hat. *im Hinterkopf behalt*
@@ -231,28 +235,28 @@ elif [ "${1}" == "check" ]
 then
     [ -f ${DIGEST_FILE} ] || die 9 "No digestfile"
     HASHER=$(head -n1 ${DIGEST_FILE} | awk '{print $5}')
-    if [ $((${CKMODES} & 001)) != 0 ]; then
+    if [ $((CKMODES & 001)) != 0 ]; then
         dd if=${MBR_DEVICE} of=${MBR_TMP} bs=${MBR_SIZE}K count=1 status=${DD_STATUS} || die 8
         grep ${MBR_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee ${LOG_FILE}
-        if [ ${PIPESTATUS[2]} -ne 0 ]
+        if [ "${PIPESTATUS[2]}" -ne 0 ]
         then
             echo "    !! TIME TO PANIK: MBR WAS MODIFIED !!"
             COUNTER=$((COUNTER + 1))
         fi
     fi
-    if [ $((${CKMODES} & 010)) -ne 0 ]; then
+    if [ $((CKMODES & 010)) -ne 0 ]; then
         grep -v ${MBR_TMP} ${DIGEST_FILE} | grep -v ${BIOS_TMP} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
-        if [ ${PIPESTATUS[2]} -ne 0 ]
+        if [ "${PIPESTATUS[2]}" -ne 0 ]
         then
             echo "    !! TIME TO PANIK: AT LEAST 1 FILE WAS MODIFIED !!"
             COUNTER=$((COUNTER + 2))
         fi
     fi
-    if [ $((${CKMODES} & 100)) -ne 0 ]; then
+    if [ $((CKMODES & 100)) -ne 0 ]; then
         flashrom --programmer ${PROGRAMMER} -r ${BIOS_TMP} > /dev/null 2>&1
         #if we set an programmer chip in config, find line with hash for bios and compare. if smthg wrong, panic
         grep ${BIOS_TMP} ${DIGEST_FILE} | ${HASHER} --check --warn --quiet --strict | tee -a ${LOG_FILE}
-        if [ ${PIPESTATUS[2]} -ne 0 ]
+        if [ "${PIPESTATUS[2]}" -ne 0 ]
         then
             echo "    !! TIME TO PANIK: BIOS WAS MODIFIED !!"
             COUNTER=$((COUNTER + 10))
@@ -270,13 +274,13 @@ then
     #For each failed file: ask if it should be recovered from backup
     for file in $(cut -d: -f1 ${LOG_FILE})
     do
-        tar -xpPvwf ${BACKUP_FILE} ${file}
-        [ $? != 0 ] && echo "Error restoring ${file} from backup, continuing" >&2
+        tar -xpPvwf ${BACKUP_FILE} "${file}"
+        [ ${?} != 0 ] && echo "Error restoring ${file} from backup, continuing" >&2
         #If the MBR is to be recovered, copy to ${MBR_DEVICE}
         if [ "${file}" == ${MBR_TMP} ]
         then
             cp ${MBR_TMP} ${MBR_DEVICE}
-            [ $? != 0 ] && echo "Error restoring MBR from backup, continuing" >&2
+            [ ${?} != 0 ] && echo "Error restoring MBR from backup, continuing" >&2
         fi
     done
 else
