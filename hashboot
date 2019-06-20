@@ -157,7 +157,7 @@ else
                 echo "You need to have flashrom installed!"
                 echo "Currently it is not installed, don't reboot"
                 echo "If you need another programmer than internal"
-                echo "use the variable PROGRAMMER in $CONFIG_FILE\!"
+                echo "use the variable PROGRAMMER in ${CONFIG_FILE}!"
             fi
         fi
 
