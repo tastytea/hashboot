@@ -18,9 +18,11 @@ steps:
   commands:
   - rm /etc/apt/apt.conf.d/docker-clean
   - rm /var/cache/apt/archives/lock
+  - echo "APT::Default-Release \"stretch\";" >> /etc/apt/apt.conf.d/00default_release
+  - echo "deb http://deb.debian.org/debian buster main" >> /etc/apt/sources.list.d/buster.list
   - apt-get update -q
-  - apt-get install -qy shellcheck
-  - shellcheck --severity=warning hashboot
+  - apt-get install -qy -t buster shellcheck
+  - shellcheck hashboot
   volumes:
   - name: debian-package-cache
     path: /var/cache/apt/archives
