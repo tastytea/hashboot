@@ -49,7 +49,7 @@ volumes:
     path: /var/cache/debian-package-cache
 - name: gpg-key
   host:
-    path: /var/autosign_gpg.key
+    path: /home/tastytea/misc/autosign_gpg.key
 
 trigger:
   event:
@@ -72,6 +72,8 @@ steps:
   commands:
   - rm /etc/apt/apt.conf.d/docker-clean
   - rm /var/cache/apt/archives/lock
+  - apt-get update -q
+  - apt-get install -qy gnupg
   - gpg --import /var/autosign_gpg.key
   - gpg --verbose --detach-sign *.tar.gz
   - gpg --verbose --detach-sign *.zip
