@@ -12,7 +12,8 @@
 # If we meet some day, and you think this is nice, you can give us a hug.     #
 ###############################################################################
 
-# shellcheck disable=SC2181     # ($?)
+# Disable warnings about $?.
+# shellcheck disable=SC2181
 
 VERSION="0.9.14"
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:${PATH}"
