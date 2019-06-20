@@ -17,25 +17,25 @@ We moved our code to
 
 ### Void Linux
 
-``` shellsession
+``` shell
 xbps-install -S hashboot
 ```
 
-### Gentoo
+### Gentoo Linux
 
 Ebuilds are available via the
 [tastytea repository](https://schlomp.space/tastytea/overlay).
 
-``` shellsession
+``` shell
 emerge -a sys-apps/hashboot
 rc-update add hashboot boot
 ```
 
-## Manual
-
 ### Arch Linux
 
-Go to [the Arch installation instructions](arch_instructions.md).
+Use the [package from AUR](https://aur.archlinux.org/packages/hashboot/).
+
+## Manual
 
 ### Any distro
 
