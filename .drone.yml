@@ -20,7 +20,7 @@ steps:
   - rm /var/cache/apt/archives/lock
   - apt-get update -q
   - apt-get install -qy shellcheck
-  - shellcheck hashboot
+  - shellcheck --severity=warning hashboot
   volumes:
   - name: debian-package-cache
     path: /var/cache/apt/archives
