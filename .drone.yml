@@ -1,0 +1,109 @@
+# kind: pipeline
+# name: check
+
+# volumes:
+# - name: debian-package-cache
+#   host:
+#     path: /var/cache/debian-package-cache
+
+# trigger:
+#   event:
+#     exclude:
+#     - tag
+
+# - name: shellcheck
+#   image: debian:stretch-slim
+#   pull: always
+#   commands:
+#   - rm /etc/apt/apt.conf.d/docker-clean
+#   - rm /var/cache/apt/archives/lock
+#   - apt-get update -q
+#   - apt-get install -qy shellcheck
+#   - shellcheck hashboot
+#   volumes:
+#   - name: debian-package-cache
+#     path: /var/cache/apt/archives
+
+# - name: notify
+#   image: drillster/drone-email
+#   pull: always
+#   settings:
+#     host: cryptoparty-celle.de
+#     from: drone@tzend.de
+#     username:
+#       from_secret: email_username
+#     password:
+#       from_secret: email_password
+#   when:
+#     status: [ changed, failure ]
+
+# ---
+
+kind: pipeline
+name: release
+
+volumes:
+- name: debian-package-cache
+  host:
+    path: /var/cache/debian-package-cache
+- name: gpg-key
+  host:
+    path: /var/autosign_gpg.key
+
+trigger:
+  event:
+    - tag
+
+- name: download tar.gz
+  image: plugins/download
+  settings:
+    source: https://schlomp.space/tastytea/hashboot/${DRONE_TAG}.tar.gz
+
+- name: download zip
+  image: plugins/download
+  settings:
+    source: https://schlomp.space/tastytea/hashboot/${DRONE_TAG}.zip
+
+- name: signature
+  image: debian:stretch-slim
+  pull: always
+  commands:
+  - rm /etc/apt/apt.conf.d/docker-clean
+  - rm /var/cache/apt/archives/lock
+  - gpg --import /var/autosign_gpg.key
+  - gpg --verbose --detach-sign *.tar.gz
+  - gpg --verbose --detach-sign *.zip
+  volumes:
+  - name: debian-package-cache
+    path: /var/cache/apt/archives
+  - name: gpg-key
+    path: /var/autosign_gpg.key
+
+- name: release
+  image: plugins/gitea-release
+  pull: always
+  settings:
+    base_url: https://schlomp.space
+    api_key:
+      from_secret: gitea_token
+    title: ${DRONE_TAG}
+    prerelease: true
+    files:
+      - hashboot-${DRONE_TAG}.tar.gz.sig
+      - hashboot-${DRONE_TAG}.zip.sig
+    checksum:
+      - sha256
+      - sha512
+
+- name: notify
+  image: drillster/drone-email
+  pull: always
+  settings:
+    host: cryptoparty-celle.de
+    from: drone@tzend.de
+    username:
+      from_secret: email_username
+    password:
+      from_secret: email_password
+  when:
+    status: [ changed, failure ]
