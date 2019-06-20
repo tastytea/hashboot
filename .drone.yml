@@ -95,7 +95,9 @@ steps:
     title: ${DRONE_TAG}
     prerelease: true
     files:
+      - hashboot-${DRONE_TAG}.tar.gz
       - hashboot-${DRONE_TAG}.tar.gz.sig
+      - hashboot-${DRONE_TAG}.zip
       - hashboot-${DRONE_TAG}.zip.sig
     checksum:
       - sha256
