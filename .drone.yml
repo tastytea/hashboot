@@ -60,11 +60,13 @@ steps:
   image: plugins/download
   settings:
     source: https://schlomp.space/tastytea/hashboot/archive/${DRONE_TAG}.tar.gz
+    destination: hashboot-${DRONE_TAG}.tar.gz
 
 - name: download zip
   image: plugins/download
   settings:
     source: https://schlomp.space/tastytea/hashboot/archive/${DRONE_TAG}.zip
+    destination: hashboot-${DRONE_TAG}.zip
 
 - name: signature
   image: debian:stretch-slim
