@@ -38,7 +38,7 @@ Go to [the Arch installation instructions](arch_instructions.md).
 * Make hashboot executable
 * Place hashboot anywhere in ${PATH}
 * Install the appropriate init script
-* If applicable, copy kernel-hook to /etc/kernel/post{inst,rm}.d/zzz-hashboot
+* If applicable, copy `hooks/kernel-postinst` to /etc/kernel/post{inst,rm}.d/zzz-hashboot
 (make sure it is called after all other hooks)
 * To generate the manpage, install [asciidoc](http://asciidoc.org/) and run
 `build_manpage.sh`.
