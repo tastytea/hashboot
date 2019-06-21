@@ -68,7 +68,7 @@ write_hashes ()
     if [ $((CKMODES & 010)) -ne 0 ]; then
         #Write hashes of all regular files to ${file}
         # shellcheck disable=SC2227
-        find /boot -type f -exec sh -c ${HASHER} --binary "${1}" >> "${file}" _ {} +
+        find /boot -type f -exec ${HASHER} --binary {} >> "${file}" +
     fi
     if [ $((CKMODES & 100)) -ne 0 ]; then
         #read bios to file
@@ -191,10 +191,10 @@ fi
 if [ "${1}" == "index" ]
 then
     #Try different hashers, use the most secure
-    HASHER=$(command -v sha512sum > /dev/null)
-    test -z "${HASHER}" && HASHER=$(command -v sha384sum > /dev/null)
-    test -z "${HASHER}" && HASHER=$(command -v sha256sum > /dev/null)
-    test -z "${HASHER}" && HASHER=$(command -v sha224sum > /dev/null)
+    HASHER=$(command -v sha512sum)
+    test -z "${HASHER}" && HASHER=$(command -v sha384sum)
+    test -z "${HASHER}" && HASHER=$(command -v sha256sum)
+    test -z "${HASHER}" && HASHER=$(command -v sha224sum)
     #If we found no hasher: exit
     [ -z "${HASHER}" ] && die 5 "No hash calculator found"
 
