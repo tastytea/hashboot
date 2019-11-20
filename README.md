@@ -42,7 +42,8 @@ Use the [package from AUR](https://aur.archlinux.org/packages/hashboot/).
 The releases on
 [schlomp.space](https://schlomp.space/tastytea/hashboot/releases) are
 PGP-signed. The key-ID is `F7301ADFC9ED262448C42B64242E5AC4DA587BF9`
-(`242E5AC4DA587BF9`).
+(`242E5AC4DA587BF9`). You can fetch it with `gpg --locate-key
+autosign@tastytea.de`.
 
 * Make hashboot executable
 * Place hashboot anywhere in ${PATH}
